@@ -967,14 +967,18 @@
 
         async function adminAddRing(event) {
             event.preventDefault();
-            const name = document.getElementById('admin-ring-name').value;
-            const teacherId = document.getElementById('admin-ring-teacher').value;
+            const ringName = document.getElementById('admin-ring-name').value;
+            
+            if (!ringName.trim()) {
+                showToast('يرجى إدخال اسم الحلقة', 'error');
+                return;
+            }
             
             try {
                 const response = await fetch(`${API_URL}/api/admin/add-ring`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, teacherId, level: 'عام' })
+                    body: JSON.stringify({ ringName })
                 });
                 
                 if (!response.ok) throw new Error('فشل إضافة الحلقة');
@@ -995,6 +999,11 @@
             const username = document.getElementById('admin-s-username').value;
             const password = document.getElementById('admin-s-password').value;
             const ringId = document.getElementById('admin-s-ring').value;
+            
+            if (!studentName.trim() || !username.trim() || !password.trim() || !ringId) {
+                showToast('يرجى ملء جميع الحقول المطلوبة', 'error');
+                return;
+            }
             
             try {
                 const response = await fetch(`${API_URL}/api/admin/add-student`, {
