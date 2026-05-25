@@ -147,12 +147,7 @@
                 </button>
             </form>
 
-            <div class="text-center text-xs text-emerald-400 space-y-1">
-                <p><strong>حسابات تجريبية:</strong></p>
-                <p>مدير: admin / admin123</p>
-                <p>معلم: معلم / 123</p>
-                <p>طالب: طالب / 123</p>
-            </div>
+
         </div>
     </div>
 
@@ -346,13 +341,23 @@
                     <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-xl border border-gold/20 space-y-4 shadow-xl">
                         <h4 class="font-bold text-gold-light text-sm">إضافة طالب جديد</h4>
                         <form onsubmit="adminAddStudent(event)" class="space-y-3">
-                            <input type="text" id="admin-s-name" placeholder="اسم الطالب الثلاثي" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
-                            <input type="tel" id="admin-p-phone" placeholder="رقم هاتف ولي الأمر" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
-                            <input type="text" id="admin-p-password" placeholder="كلمة مرور ولي الأمر" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
-                            <select id="admin-s-ring" class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                            <input type="text" id="admin-s-name" placeholder="اسم الطالب الكامل" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                            <input type="text" id="admin-s-username" placeholder="اسم المستخدم" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                            <input type="password" id="admin-s-password" placeholder="كلمة المرور" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                            <select id="admin-s-ring" class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold" required>
                                 <option value="">اختر الحلقة</option>
                             </select>
                             <button type="submit" class="w-full bg-gold text-mosque-950 font-bold py-2 rounded text-xs hover:brightness-110 transition-all">تسجيل الطالب</button>
+                        </form>
+                    </div>
+
+                    <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-xl border border-gold/20 space-y-4 shadow-xl">
+                        <h4 class="font-bold text-gold-light text-sm">إضافة معلم جديد</h4>
+                        <form onsubmit="adminAddTeacher(event)" class="space-y-3">
+                            <input type="text" id="admin-t-name" placeholder="اسم المعلم" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                            <input type="text" id="admin-t-username" placeholder="اسم المستخدم" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                            <input type="password" id="admin-t-password" placeholder="كلمة المرور" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                            <button type="submit" class="w-full bg-gold text-mosque-950 font-bold py-2 rounded text-xs hover:brightness-110 transition-all">إضافة معلم</button>
                         </form>
                     </div>
 
@@ -950,15 +955,15 @@
         async function adminAddStudent(event) {
             event.preventDefault();
             const studentName = document.getElementById('admin-s-name').value;
-            const phone = document.getElementById('admin-p-phone').value;
-            const password = document.getElementById('admin-p-password').value;
+            const username = document.getElementById('admin-s-username').value;
+            const password = document.getElementById('admin-s-password').value;
             const ringId = document.getElementById('admin-s-ring').value;
             
             try {
                 const response = await fetch(`${API_URL}/api/admin/add-student`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ studentName, phone, password, ringId })
+                    body: JSON.stringify({ studentName, username, password, ringId })
                 });
                 
                 if (!response.ok) throw new Error('فشل إضافة الطالب');
@@ -968,13 +973,63 @@
                 loadAdminAccounts();
                 
                 document.getElementById('admin-s-name').value = '';
-                document.getElementById('admin-p-phone').value = '';
-                document.getElementById('admin-p-password').value = '';
+                document.getElementById('admin-s-username').value = '';
+                document.getElementById('admin-s-password').value = '';
                 
-                showToast(`تم تسجيل الطالب! اسم المستخدم: ${result.student.name}, كلمة المرور: 123`);
+                showToast(result.message || 'تم تسجيل الطالب بنجاح!');
             } catch (error) {
                 console.error('خطأ:', error);
                 showToast('فشل إضافة الطالب', 'error');
+            }
+        }
+
+        async function adminAddTeacher(event) {
+            event.preventDefault();
+            const teacherName = document.getElementById('admin-t-name').value;
+            const username = document.getElementById('admin-t-username').value;
+            const password = document.getElementById('admin-t-password').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/api/admin/add-teacher`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ teacherName, username, password })
+                });
+                
+                if (!response.ok) throw new Error('فشل إضافة المعلم');
+                
+                const result = await response.json();
+                await loadDB();
+                loadAdminAccounts();
+                
+                document.getElementById('admin-t-name').value = '';
+                document.getElementById('admin-t-username').value = '';
+                document.getElementById('admin-t-password').value = '';
+                
+                showToast(result.message || 'تم إضافة المعلم بنجاح!');
+            } catch (error) {
+                console.error('خطأ:', error);
+                showToast('فشل إضافة المعلم', 'error');
+            }
+        }
+
+        async function adminTransferStudent(studentId, newRingId) {
+            try {
+                const response = await fetch(`${API_URL}/api/admin/transfer-student`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ studentId, newRingId })
+                });
+                
+                if (!response.ok) throw new Error('فشل نقل الطالب');
+                
+                const result = await response.json();
+                await loadDB();
+                loadAdminAccounts();
+                showToast(result.message);
+            } catch (error) {
+                console.error('خطأ:', error);
+                showToast('فشل نقل الطالب', 'error');
             }
         }
 

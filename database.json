@@ -6,62 +6,11 @@
       "password": "admin123",
       "role": "admin",
       "displayName": "المدير العام"
-    },
-    {
-      "id": "teacher-1",
-      "username": "معلم",
-      "password": "123",
-      "role": "teacher",
-      "displayName": "أستاذ أحمد"
-    },
-    {
-      "id": "student-1",
-      "username": "طالب",
-      "password": "123",
-      "role": "student",
-      "displayName": "محمد علي"
-    },
-    {
-      "id": "parent-1",
-      "phone": "0987654321",
-      "password": "123",
-      "role": "parent",
-      "displayName": "ولي أمر: محمد"
     }
   ],
-  "rings": [
-    {
-      "id": "ring-1",
-      "name": "حلقة المستوى الأول",
-      "teacherId": "teacher-1",
-      "level": "مبتدئ"
-    }
-  ],
-  "students": [
-    {
-      "id": "s-1",
-      "name": "محمد علي",
-      "ringId": "ring-1",
-      "parentId": "parent-1",
-      "userId": "student-1",
-      "points": 45
-    }
-  ],
-  "logs": [
-    {
-      "id": "log-1",
-      "studentId": "s-1",
-      "date": "2026-05-25",
-      "attendance": "regular",
-      "surah": "الفاتحة",
-      "pageFrom": 1,
-      "pageTo": 5,
-      "behavior": 2,
-      "participation": 3,
-      "homework": "حفظ سورة الفاتحة",
-      "notes": "أداء ممتاز جداً"
-    }
-  ],
+  "rings": [],
+  "students": [],
+  "logs": [],
   "settings": {
     "early": 5,
     "regular": 3,

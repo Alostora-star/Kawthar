@@ -2,6 +2,8 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
+const https = require('https');
+const http = require('http');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -263,26 +265,18 @@ app.post('/api/admin/add-student', (req, res) => {
     return res.status(500).json({ error: 'فشل تحميل قاعدة البيانات' });
   }
 
-  const { studentName, phone, password, ringId } = req.body;
+  const { studentName, username, password, ringId } = req.body;
 
-  // إنشاء أو إعادة استخدام حساب ولي الأمر
-  let parent = db.users.find(u => u.phone === phone && u.role === 'parent');
-  if (!parent) {
-    parent = {
-      id: 'p-' + Math.random().toString(36).substr(2, 9),
-      phone,
-      password,
-      role: 'parent',
-      displayName: `ولي أمر: ${studentName.split(' ')[0]}`
-    };
-    db.users.push(parent);
+  // التحقق من عدم تكرار اسم المستخدم
+  if (db.users.find(u => u.username === username)) {
+    return res.status(400).json({ error: 'اسم المستخدم موجود بالفعل' });
   }
 
   // إنشاء حساب الطالب
   const studentUser = {
     id: 'su-' + Math.random().toString(36).substr(2, 9),
-    username: studentName,
-    password: '123',
+    username,
+    password,
     role: 'student',
     displayName: studentName
   };
@@ -293,7 +287,6 @@ app.post('/api/admin/add-student', (req, res) => {
     id: 's-' + Math.random().toString(36).substr(2, 9),
     name: studentName,
     ringId,
-    parentId: parent.id,
     userId: studentUser.id,
     points: 0
   };
@@ -303,11 +296,75 @@ app.post('/api/admin/add-student', (req, res) => {
     res.json({ 
       success: true, 
       student: newStudent,
-      parentAccount: { phone, password },
-      studentAccount: { username: studentName, password: '123' }
+      message: `تم تسجيل الطالب ${studentName} بنجاح`
     });
   } else {
     res.status(500).json({ error: 'فشل إضافة الطالب' });
+  }
+});
+
+// إضافة معلم جديد
+app.post('/api/admin/add-teacher', (req, res) => {
+  const db = readDB();
+  if (!db) {
+    return res.status(500).json({ error: 'فشل تحميل قاعدة البيانات' });
+  }
+
+  const { teacherName, username, password } = req.body;
+
+  // التحقق من عدم تكرار اسم المستخدم
+  if (db.users.find(u => u.username === username)) {
+    return res.status(400).json({ error: 'اسم المستخدم موجود بالفعل' });
+  }
+
+  // إنشاء حساب المعلم
+  const teacherUser = {
+    id: 't-' + Math.random().toString(36).substr(2, 9),
+    username,
+    password,
+    role: 'teacher',
+    displayName: teacherName
+  };
+  db.users.push(teacherUser);
+
+  if (writeDB(db)) {
+    res.json({ 
+      success: true, 
+      teacher: teacherUser,
+      message: `تم تسجيل المعلم ${teacherName} بنجاح`
+    });
+  } else {
+    res.status(500).json({ error: 'فشل إضافة المعلم' });
+  }
+});
+
+// حذف معلم
+app.delete('/api/admin/teacher/:teacherId', (req, res) => {
+  const db = readDB();
+  if (!db) {
+    return res.status(500).json({ error: 'فشل تحميل قاعدة البيانات' });
+  }
+
+  const teacher = db.users.find(u => u.id === req.params.teacherId && u.role === 'teacher');
+  if (!teacher) {
+    return res.status(404).json({ error: 'المعلم غير موجود' });
+  }
+
+  // حذف حساب المعلم
+  db.users = db.users.filter(u => u.id !== req.params.teacherId);
+  
+  // إزالة المعلم من الحلقات
+  db.rings = db.rings.map(ring => {
+    if (ring.teacherId === req.params.teacherId) {
+      ring.teacherId = null;
+    }
+    return ring;
+  });
+
+  if (writeDB(db)) {
+    res.json({ success: true, message: 'تم حذف المعلم بنجاح' });
+  } else {
+    res.status(500).json({ error: 'فشل حذف المعلم' });
   }
 });
 
@@ -336,6 +393,39 @@ app.delete('/api/admin/student/:studentId', (req, res) => {
     res.json({ success: true, message: 'تم حذف الطالب بنجاح' });
   } else {
     res.status(500).json({ error: 'فشل حذف الطالب' });
+  }
+});
+
+// نقل الطالب إلى حلقة أخرى مع نقل النقاط
+app.post('/api/admin/transfer-student', (req, res) => {
+  const db = readDB();
+  if (!db) {
+    return res.status(500).json({ error: 'فشل تحميل قاعدة البيانات' });
+  }
+
+  const { studentId, newRingId } = req.body;
+
+  const student = db.students.find(s => s.id === studentId);
+  if (!student) {
+    return res.status(404).json({ error: 'الطالب غير موجود' });
+  }
+
+  const newRing = db.rings.find(r => r.id === newRingId);
+  if (!newRing) {
+    return res.status(404).json({ error: 'الحلقة غير موجودة' });
+  }
+
+  const oldRingId = student.ringId;
+  student.ringId = newRingId;
+
+  if (writeDB(db)) {
+    res.json({ 
+      success: true, 
+      message: `تم نقل الطالب من الحلقة القديمة إلى ${newRing.name} مع الاحتفاظ بـ ${student.points} نقطة`,
+      student
+    });
+  } else {
+    res.status(500).json({ error: 'فشل نقل الطالب' });
   }
 });
 
@@ -403,9 +493,30 @@ app.get('/api/leaderboard', (req, res) => {
   });
 });
 
+// ==================== KEEP-ALIVE FUNCTION ====================
+
+// دالة للحفاظ على الخادم مستيقظاً
+function keepAlive() {
+  if (process.env.RENDER_EXTERNAL_URL) {
+    const url = process.env.RENDER_EXTERNAL_URL;
+    setInterval(() => {
+      const protocol = url.startsWith('https') ? https : http;
+      protocol.get(url, (res) => {
+        console.log(`✅ Keep-Alive ping: ${res.statusCode}`);
+      }).on('error', (err) => {
+        console.log(`⚠️ Keep-Alive error: ${err.message}`);
+      });
+    }, 14 * 60 * 1000); // كل 14 دقيقة
+  }
+}
+
 // ==================== START SERVER ====================
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🕌 منظومة الكوثر تعمل على http://localhost:${PORT}`);
   console.log(`📊 قاعدة البيانات: ${DB_PATH}`);
+  keepAlive();
 });
+
+// منع إغلاق الخادم
+server.keepAliveTimeout = 65000;
