@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منظومة الكوثر لإدارة الحلقات التربوية</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts (Tajawal & Amiri) -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        mosque: {
+                            950: '#061c16',
+                            900: '#0b2e25',
+                            800: '#104033',
+                            700: '#175544',
+                            600: '#1f6a56',
+                            100: '#edfbf7',
+                        },
+                        gold: {
+                            DEFAULT: '#C5A85C',
+                            light: '#E6D39D',
+                            dark: '#A3843E',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Tajawal', 'sans-serif'],
+                        serif: ['Amiri', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #061c16;
+            background-image: radial-gradient(rgba(197, 168, 92, 0.04) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+        .tab-transition {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #061c16;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #C5A85C;
+            border-radius: 3px;
+        }
+        @keyframes pulse-gold {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(197, 168, 92, 0.6)); }
+            50% { transform: scale(1.08); filter: drop-shadow(0 0 15px rgba(197, 168, 92, 0.9)); }
+        }
+        .animate-crown {
+            animation: pulse-gold 3s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="text-white min-h-screen flex flex-col justify-between">
+
+    <!-- CUSTOM TOAST NOTIFICATION -->
+    <div id="custom-toast" class="fixed bottom-5 left-5 z-50 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 max-w-sm w-full bg-mosque-900 border-2 border-gold/60 p-4 rounded-xl shadow-2xl flex items-center gap-3">
+        <div class="bg-gold text-mosque-950 p-2 rounded-full" id="toast-icon-wrapper">
+            <i class="fas fa-info-circle text-base" id="toast-icon"></i>
+        </div>
+        <div class="flex-grow">
+            <p class="text-xs text-emerald-200 font-bold" id="toast-title">تنبيه المنظومة</p>
+            <p class="text-xs text-white mt-0.5" id="toast-message">جاري تنفيذ الإجراء...</p>
+        </div>
+    </div>
+
+    <!-- CUSTOM CONFIRMATION MODAL -->
+    <div id="custom-confirm" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-2xl border border-gold/40 shadow-2xl max-w-sm w-full space-y-4 text-center">
+            <div class="text-gold text-3xl">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h4 class="font-serif text-lg font-bold text-gold-light">هل أنت متأكد؟</h4>
+            <p class="text-xs text-emerald-200" id="confirm-msg-text">لا يمكن التراجع عن هذا الإجراء بعد تنفيذه.</p>
+            <div class="flex gap-2 pt-2">
+                <button id="confirm-btn-yes" class="flex-grow bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded text-xs transition-colors">نعم، متأكد</button>
+                <button id="confirm-btn-no" class="flex-grow bg-mosque-800 hover:bg-mosque-700 text-white border border-gold/25 py-2 rounded text-xs transition-colors">تراجع</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- 1. LOGIN SCREEN -->
+    <!-- ========================================================= -->
+    <div id="login-screen" class="flex-grow flex items-center justify-center px-4 py-12 relative">
+        <div class="absolute inset-0 opacity-5 pointer-events-none flex justify-center items-center overflow-hidden">
+            <svg class="w-[700px] h-[700px] text-gold" fill="currentColor" viewBox="0 0 100 100">
+                <path d="M50 0 L65 35 L100 50 L65 65 L50 100 L35 65 L0 50 L35 35 Z" />
+            </svg>
+        </div>
+
+        <div class="max-w-md w-full bg-gradient-to-b from-mosque-900 to-mosque-950 p-8 rounded-2xl border border-gold/40 shadow-2xl relative z-10 space-y-6 transform transition-all hover:border-gold duration-500">
+            <div class="text-center space-y-3">
+                <div class="flex justify-center mb-1">
+                    <div class="bg-gradient-to-br from-gold to-gold-dark p-3 rounded-full shadow-lg shadow-gold/20 animate-pulse">
+                        <svg class="w-10 h-10 text-mosque-950" viewBox="0 0 64 64" fill="currentColor">
+                            <path d="M32 2 L26 12 L28 12 L28 20 L24 24 L24 30 L28 32 L28 62 L36 62 L36 32 L40 30 L40 24 L36 20 L36 12 L38 12 Z M32 6 L34 10 L30 10 Z"/>
+                        </svg>
+                    </div>
+                </div>
+                <h2 class="font-serif text-2xl lg:text-3xl text-gold-light font-bold">جامع الكوثر</h2>
+                <p class="text-[11px] text-emerald-400 font-bold tracking-widest uppercase">الجمهورية العربية السورية - وزارة الأوقاف</p>
+                <div class="h-[1px] bg-gradient-to-r from-transparent via-gold/40 to-transparent w-4/5 mx-auto"></div>
+                <p class="text-lg font-serif text-white font-bold mt-2">نظام إدارة الحلقات التربوية الصيفية</p>
+            </div>
+
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <div class="space-y-2">
+                    <label class="text-xs text-emerald-400 font-bold block">اسم المستخدم أو رقم الهاتف</label>
+                    <div class="relative">
+                        <input type="text" id="login-identifier" required placeholder="اسم المستخدم أو الهاتف" class="w-full bg-mosque-950 border border-gold/30 rounded-lg py-3 px-4 pl-10 text-white focus:outline-none focus:border-gold placeholder-emerald-800 text-sm transition-all focus:ring-1 focus:ring-gold">
+                        <i class="fas fa-user absolute left-3 top-4 text-gold/60"></i>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-xs text-emerald-400 font-bold block">كلمة المرور</label>
+                    <div class="relative">
+                        <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-mosque-950 border border-gold/30 rounded-lg py-3 px-4 pl-10 text-white focus:outline-none focus:border-gold placeholder-emerald-800 text-sm transition-all focus:ring-1 focus:ring-gold">
+                        <i class="fas fa-lock absolute left-3 top-4 text-gold/60"></i>
+                    </div>
+                </div>
+
+                <div id="login-error" class="hidden bg-red-950/60 border border-red-500/40 text-red-200 p-3 rounded-lg text-xs text-center font-bold animate-bounce">
+                    فشل تسجيل الدخول. يرجى التحقق من المدخلات.
+                </div>
+
+                <button type="submit" class="w-full bg-gradient-to-r from-gold to-gold-dark text-mosque-950 font-bold py-3.5 rounded-lg shadow-lg hover:brightness-110 transition-all duration-300 flex items-center justify-center gap-2 transform active:scale-95">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>تسجيل الدخول للمنظومة</span>
+                </button>
+            </form>
+
+            <div class="text-center text-xs text-emerald-400 space-y-1">
+                <p><strong>حسابات تجريبية:</strong></p>
+                <p>مدير: admin / admin123</p>
+                <p>معلم: معلم / 123</p>
+                <p>طالب: طالب / 123</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- 2. MAIN LOGGED-IN PORTAL -->
+    <!-- ========================================================= -->
+    <div id="portal-screen" class="hidden flex-grow flex flex-col tab-transition">
+        <!-- Dashboard Top Header Bar -->
+        <header class="bg-mosque-900 border-b border-gold/30 py-4 px-6 shadow-md">
+            <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-mosque text-gold text-2xl animate-pulse"></i>
+                    <div>
+                        <h2 class="font-serif text-xl font-bold text-gold-light">منظومة جامع الكوثر التربوية</h2>
+                        <span id="portal-user-badge" class="text-xs text-emerald-400 font-bold flex items-center gap-1.5">
+                            <i class="fas fa-circle text-[8px] text-emerald-500 animate-ping"></i>
+                            <span>مرحباً بك</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 overflow-x-auto w-full sm:w-auto" id="nav-tabs-container">
+                    <!-- Loaded dynamically -->
+                </div>
+
+                <button onclick="logout()" class="text-red-400 hover:text-red-300 font-bold text-sm flex items-center gap-1 shrink-0 transition-transform active:scale-90">
+                    <i class="fas fa-power-off"></i>
+                    <span>تسجيل الخروج</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Workspace Area -->
+        <main class="max-w-6xl w-full mx-auto px-4 py-8 flex-grow">
+
+            <!-- ================= TAB: LEADERBOARD ================= -->
+            <section id="tab-leaderboard" class="hidden space-y-8">
+                <div class="text-center space-y-2">
+                    <h3 class="font-serif text-2xl text-gold-light font-bold flex items-center justify-center gap-2">
+                        <i class="fas fa-trophy text-gold animate-bounce"></i>
+                        <span>لوحة الشرف للدورة الصيفية</span>
+                    </h3>
+                    <p class="text-xs text-emerald-300">ترتيب الطلاب المتصدرين ونقاط تفوقهم التراكمية</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-xl border border-gold/20 shadow-xl space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-bold text-gold-light text-sm"><i class="fas fa-star"></i> الترتيب العام لجميع الطلاب</h4>
+                            <input type="text" id="lead-search" onkeyup="renderLeaderboard()" placeholder="بحث سريع..." class="bg-mosque-950 border border-gold/20 rounded py-1.5 px-3 text-xs text-white focus:outline-none focus:border-gold placeholder-emerald-850">
+                        </div>
+                        <div class="overflow-x-auto rounded-lg border border-gold/10">
+                            <table class="w-full text-right text-xs">
+                                <thead class="bg-mosque-950 text-gold-light border-b border-gold/20">
+                                    <tr>
+                                        <th class="p-3 text-center">الترتيب</th>
+                                        <th class="p-3">اسم الطالب</th>
+                                        <th class="p-3">الحلقة</th>
+                                        <th class="p-3 text-center">النقاط</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lead-table-body" class="divide-y divide-emerald-950/20">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-xl border border-gold/20 space-y-3 shadow-lg">
+                            <h4 class="font-bold text-gold-light text-sm"><i class="fas fa-layer-group"></i> تنافس الحلقات</h4>
+                            <div class="space-y-3" id="ring-averages-container">
+                                <!-- Dynamic -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= TAB: STUDENT ================= -->
+            <section id="tab-student" class="hidden space-y-8">
+                <div class="bg-gradient-to-l from-mosque-900 to-mosque-950 p-6 rounded-2xl border-r-4 border-gold shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+                    <div class="space-y-2 relative z-10 text-center md:text-right">
+                        <span class="text-xs bg-gold/15 text-gold-light px-3 py-1 rounded-full font-bold border border-gold/30">بوابة الطالب الخاصة</span>
+                        <h3 class="font-serif text-3xl font-bold text-white mt-1" id="student-welcome-name">أهلاً بك يا بطل القرآن</h3>
+                        <p class="text-sm text-emerald-300 max-w-xl italic" id="student-motivational-quote">"إن الذي ليس في جوفه شيء من القرآن كالبيت الخرب"</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-xl border border-gold/20 space-y-2 shadow-lg">
+                        <span class="text-xs text-emerald-400 font-bold">إجمالي النقاط</span>
+                        <p class="text-4xl font-black text-gold-light" id="student-total-points">0</p>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-xl border border-gold/20 space-y-4 shadow-xl">
+                    <h4 class="font-bold text-gold-light text-sm"><i class="fas fa-book-reader"></i> آخر التقييمات</h4>
+                    <div id="student-logs-container" class="space-y-3">
+                        <!-- Dynamic -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= TAB: PARENT ================= -->
+            <section id="tab-parent" class="hidden space-y-8">
+                <div class="text-center space-y-2">
+                    <h3 class="font-serif text-2xl text-gold-light font-bold">بوابة ولي الأمر</h3>
+                    <p class="text-xs text-emerald-300">متابعة أداء الأبناء والتقييمات اليومية</p>
+                </div>
+
+                <div id="parent-children-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Dynamic -->
+                </div>
+            </section>
+
+            <!-- ================= TAB: TEACHER ================= -->
+            <section id="tab-teacher" class="hidden space-y-8">
+                <div class="text-center space-y-2">
+                    <h3 class="font-serif text-2xl text-gold-light font-bold" id="teacher-ring-title">حلقة المعلم</h3>
+                    <p class="text-xs text-emerald-300">رصد الحضور والسجلات اليومية</p>
+                </div>
+
+                <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-xl border border-gold/20 shadow-xl overflow-x-auto">
+                    <table class="w-full text-right text-xs">
+                        <thead class="bg-mosque-950 text-gold-light border-b border-gold/20">
+                            <tr>
+                                <th class="p-3">اسم الطالب</th>
+                                <th class="p-3">الحضور</th>
+                                <th class="p-3">السورة والصفحات</th>
+                                <th class="p-3">السلوك</th>
+                                <th class="p-3">المشاركة</th>
+                                <th class="p-3">الواجب</th>
+                                <th class="p-3">الملاحظات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teacher-matrix-body" class="divide-y divide-emerald-950/20">
+                            <!-- Dynamic -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <button onclick="saveDailyLogByTeacher()" class="w-full bg-gradient-to-r from-gold to-gold-dark text-mosque-950 font-bold py-3 rounded-lg shadow-lg hover:brightness-110 transition-all duration-300 flex items-center justify-center gap-2">
+                    <i class="fas fa-save"></i>
+                    <span>حفظ السجل اليومي</span>
+                </button>
+            </section>
+
+            <!-- ================= TAB: ADMIN ================= -->
+            <section id="tab-admin" class="hidden space-y-8">
+                <div class="text-center space-y-2">
+                    <h3 class="font-serif text-2xl text-gold-light font-bold">لوحة تحكم المدير</h3>
+                    <p class="text-xs text-emerald-300">إدارة الحلقات والحسابات والإعدادات</p>
+                </div>
+
+                <div class="flex gap-2 flex-wrap" id="admin-tabs">
+                    <button id="sub-btn-rings" class="admin-sub-btn bg-gold/10 text-gold-light px-4 py-2 rounded text-xs font-bold flex items-center gap-2">
+                        <i class="fas fa-circle"></i> إدارة الحلقات
+                    </button>
+                    <button id="sub-btn-accounts" class="admin-sub-btn text-emerald-300 px-4 py-2 rounded text-xs font-bold flex items-center gap-2">
+                        <i class="fas fa-users"></i> إدارة الحسابات
+                    </button>
+                    <button id="sub-btn-settings" class="admin-sub-btn text-emerald-300 px-4 py-2 rounded text-xs font-bold flex items-center gap-2">
+                        <i class="fas fa-sliders-h"></i> الإعدادات
+                    </button>
+                </div>
+
+                <!-- Sub: Rings -->
+                <div id="admin-sub-rings" class="space-y-4">
+                    <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-xl border border-gold/20 space-y-4 shadow-xl">
+                        <h4 class="font-bold text-gold-light text-sm">إضافة حلقة جديدة</h4>
+                        <form onsubmit="adminAddRing(event)" class="space-y-3">
+                            <input type="text" id="admin-ring-name" placeholder="اسم الحلقة" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                            <select id="admin-ring-teacher" class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                                <option value="">اختر المعلم</option>
+                            </select>
+                            <button type="submit" class="w-full bg-gold text-mosque-950 font-bold py-2 rounded text-xs hover:brightness-110 transition-all">إضافة الحلقة</button>
+                        </form>
+                    </div>
+
+                    <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-xl border border-gold/20 space-y-4 shadow-xl">
+                        <h4 class="font-bold text-gold-light text-sm">الحلقات الموجودة</h4>
+                        <div id="admin-rings-list" class="space-y-2">
+                            <!-- Dynamic -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sub: Accounts -->
+                <div id="admin-sub-accounts" class="hidden space-y-4">
+                    <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-xl border border-gold/20 space-y-4 shadow-xl">
+                        <h4 class="font-bold text-gold-light text-sm">إضافة طالب جديد</h4>
+                        <form onsubmit="adminAddStudent(event)" class="space-y-3">
+                            <input type="text" id="admin-s-name" placeholder="اسم الطالب الثلاثي" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                            <input type="tel" id="admin-p-phone" placeholder="رقم هاتف ولي الأمر" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                            <input type="text" id="admin-p-password" placeholder="كلمة مرور ولي الأمر" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                            <select id="admin-s-ring" class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                                <option value="">اختر الحلقة</option>
+                            </select>
+                            <button type="submit" class="w-full bg-gold text-mosque-950 font-bold py-2 rounded text-xs hover:brightness-110 transition-all">تسجيل الطالب</button>
+                        </form>
+                    </div>
+
+                    <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-xl border border-gold/20 space-y-4 shadow-xl">
+                        <h4 class="font-bold text-gold-light text-sm">الطلاب المسجلين</h4>
+                        <div id="admin-students-list" class="space-y-2">
+                            <!-- Dynamic -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sub: Settings -->
+                <div id="admin-sub-settings" class="hidden space-y-4">
+                    <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-xl border border-gold/20 space-y-4 shadow-xl">
+                        <h4 class="font-bold text-gold-light text-sm">إعدادات نظام النقاط</h4>
+                        <form onsubmit="adminSaveSystemSettings(event)" class="space-y-3">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-xs text-emerald-400 block mb-1">حضور باكر</label>
+                                    <input type="number" id="cfg-early" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-emerald-400 block mb-1">حضور عادي</label>
+                                    <input type="number" id="cfg-regular" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-emerald-400 block mb-1">حضور متأخر</label>
+                                    <input type="number" id="cfg-late" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-emerald-400 block mb-1">غياب</label>
+                                    <input type="number" id="cfg-absent" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full bg-gold text-mosque-950 font-bold py-2 rounded text-xs hover:brightness-110 transition-all">حفظ الإعدادات</button>
+                        </form>
+                    </div>
+                </div>
+
+                <button onclick="exportJSONBackup()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg shadow-lg transition-all duration-300 flex items-center justify-center gap-2">
+                    <i class="fas fa-download"></i>
+                    <span>تصدير نسخة احتياطية</span>
+                </button>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        // ==================== GLOBAL STATE ====================
+        let db = null;
+        let currentUser = null;
+        const API_URL = window.location.origin;
+
+        // ==================== INITIALIZATION ====================
+        window.addEventListener('load', async () => {
+            await loadDB();
+        });
+
+        async function loadDB() {
+            try {
+                const response = await fetch(`${API_URL}/api/db`);
+                if (!response.ok) throw new Error('فشل تحميل قاعدة البيانات');
+                db = await response.json();
+                showLogin();
+            } catch (error) {
+                console.error('خطأ:', error);
+                showToast('فشل تحميل قاعدة البيانات', 'error');
+            }
+        }
+
+        async function saveDB() {
+            try {
+                const response = await fetch(`${API_URL}/api/db`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(db)
+                });
+                if (!response.ok) throw new Error('فشل حفظ قاعدة البيانات');
+                return true;
+            } catch (error) {
+                console.error('خطأ:', error);
+                showToast('فشل حفظ البيانات', 'error');
+                return false;
+            }
+        }
+
+        // ==================== TOAST & CONFIRM ====================
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('custom-toast');
+            const icon = document.getElementById('toast-icon');
+            const wrapper = document.getElementById('toast-icon-wrapper');
+            
+            document.getElementById('toast-message').textContent = message;
+            
+            if (type === 'error') {
+                icon.className = 'fas fa-exclamation-circle text-base';
+                wrapper.className = 'bg-red-600 text-white p-2 rounded-full';
+            } else {
+                icon.className = 'fas fa-check-circle text-base';
+                wrapper.className = 'bg-gold text-mosque-950 p-2 rounded-full';
+            }
+            
+            toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+
+        function showConfirm(message, callback) {
+            const modal = document.getElementById('custom-confirm');
+            document.getElementById('confirm-msg-text').textContent = message;
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+            
+            const yesBtn = document.getElementById('confirm-btn-yes');
+            const noBtn = document.getElementById('confirm-btn-no');
+            
+            const closeConfirm = () => {
+                modal.classList.add('opacity-0');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+                yesBtn.removeEventListener('click', handleYes);
+                noBtn.removeEventListener('click', closeConfirm);
+            };
+            
+            const handleYes = () => {
+                callback();
+                closeConfirm();
+            };
+            
+            yesBtn.addEventListener('click', handleYes);
+            noBtn.addEventListener('click', closeConfirm);
+        }
+
+        // ==================== LOGIN ====================
+        async function handleLogin(event) {
+            event.preventDefault();
+            const identifier = document.getElementById('login-identifier').value;
+            const password = document.getElementById('login-password').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/api/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ identifier, password })
+                });
+                
+                if (!response.ok) {
+                    document.getElementById('login-error').classList.remove('hidden');
+                    return;
+                }
+                
+                const result = await response.json();
+                currentUser = result.user;
+                launchPortal();
+            } catch (error) {
+                console.error('خطأ:', error);
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        }
+
+        function showLogin() {
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('portal-screen').classList.add('hidden');
+        }
+
+        function launchPortal() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('portal-screen').classList.remove('hidden');
+            
+            document.getElementById('portal-user-badge').innerText = `مرحباً بك: ${currentUser.displayName}`;
+            
+            const tabsContainer = document.getElementById('nav-tabs-container');
+            tabsContainer.innerHTML = '';
+            
+            let tabs = [
+                { id: 'leaderboard', name: 'لوحة الشرف', icon: 'fa-trophy' }
+            ];
+            
+            if (currentUser.role === 'admin') {
+                tabs.push({ id: 'admin', name: 'إدارة المنظومة', icon: 'fa-user-shield' });
+                tabs.push({ id: 'teacher', name: 'لوحة الحلقات', icon: 'fa-chalkboard-teacher' });
+            }
+            
+            if (currentUser.role === 'teacher') {
+                tabs.push({ id: 'teacher', name: 'لوحة الحلقات', icon: 'fa-chalkboard-teacher' });
+            }
+            
+            if (currentUser.role === 'student') {
+                tabs.push({ id: 'student', name: 'بوابة الطالب', icon: 'fa-user-graduate' });
+            }
+            
+            if (currentUser.role === 'parent') {
+                tabs.push({ id: 'parent', name: 'بوابة الأهل', icon: 'fa-home' });
+            }
+            
+            tabs.forEach(tab => {
+                const btn = document.createElement('button');
+                btn.className = 'px-3 py-2 rounded text-xs font-bold flex items-center gap-1 text-emerald-300 hover:bg-mosque-800 transition-all';
+                btn.innerHTML = `<i class="fas ${tab.icon}"></i> ${tab.name}`;
+                btn.onclick = () => switchTab(tab.id);
+                tabsContainer.appendChild(btn);
+            });
+            
+            switchTab('leaderboard');
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('section[id^="tab-"]').forEach(s => s.classList.add('hidden'));
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            
+            if (tabId === 'leaderboard') renderLeaderboard();
+            else if (tabId === 'student') renderStudentDashboard();
+            else if (tabId === 'parent') renderParentDashboard();
+            else if (tabId === 'teacher') renderTeacherRing();
+            else if (tabId === 'admin') renderAdminPanel();
+        }
+
+        function logout() {
+            currentUser = null;
+            showLogin();
+            showToast('تم تسجيل الخروج بنجاح');
+        }
+
+        // ==================== LEADERBOARD ====================
+        async function renderLeaderboard() {
+            try {
+                const response = await fetch(`${API_URL}/api/leaderboard`);
+                if (!response.ok) throw new Error('فشل تحميل لوحة الشرف');
+                
+                const data = await response.json();
+                const searchTerm = document.getElementById('lead-search').value.toLowerCase();
+                
+                const filtered = data.leaderboard.filter(s => 
+                    s.name.includes(searchTerm) || s.ringName.includes(searchTerm)
+                );
+                
+                let html = '';
+                filtered.forEach((student, index) => {
+                    html += `
+                        <tr class="hover:bg-mosque-800/10 transition-all">
+                            <td class="p-3 text-center font-bold text-gold-light">${index + 1}</td>
+                            <td class="p-3 font-bold text-white">${student.name}</td>
+                            <td class="p-3 text-emerald-300">${student.ringName}</td>
+                            <td class="p-3 text-center">
+                                <span class="bg-gold/20 text-gold-light px-3 py-1 rounded-full font-bold">${student.points}</span>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                document.getElementById('lead-table-body').innerHTML = html;
+                
+                let ringHtml = '';
+                data.ringAverages.forEach(ring => {
+                    ringHtml += `
+                        <div class="bg-mosque-950 p-3 rounded border border-gold/10">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs text-emerald-400">${ring.ringName}</span>
+                                <span class="text-sm font-bold text-gold-light">${ring.average}</span>
+                            </div>
+                            <p class="text-xs text-emerald-700 mt-1">${ring.studentCount} طالب</p>
+                        </div>
+                    `;
+                });
+                
+                document.getElementById('ring-averages-container').innerHTML = ringHtml;
+            } catch (error) {
+                console.error('خطأ:', error);
+                showToast('فشل تحميل لوحة الشرف', 'error');
+            }
+        }
+
+        // ==================== STUDENT DASHBOARD ====================
+        async function renderStudentDashboard() {
+            const student = db.students.find(s => s.userId === currentUser.id);
+            if (!student) {
+                document.getElementById('student-logs-container').innerHTML = '<p class="text-emerald-700">لم يتم العثور على بيانات الطالب</p>';
+                return;
+            }
+            
+            document.getElementById('student-welcome-name').textContent = `أهلاً بك يا ${student.name}`;
+            document.getElementById('student-total-points').textContent = student.points;
+            
+            const logs = db.logs.filter(l => l.studentId === student.id).sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            let html = '';
+            logs.slice(0, 5).forEach(log => {
+                html += `
+                    <div class="bg-mosque-950 p-4 rounded border border-gold/10">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-xs text-gold font-bold">${log.date}</span>
+                            <span class="text-xs bg-emerald-600/20 text-emerald-300 px-2 py-1 rounded">${log.attendance === 'early' ? '🌱 باكر' : log.attendance === 'regular' ? '✓ حاضر' : log.attendance === 'late' ? '⏰ متأخر' : '✗ غائب'}</span>
+                        </div>
+                        <p class="text-xs text-emerald-200"><strong>السورة:</strong> ${log.surah || 'لا يوجد'}</p>
+                        <p class="text-xs text-emerald-200"><strong>الصفحات:</strong> من ${log.pageFrom} إلى ${log.pageTo}</p>
+                        <p class="text-xs text-emerald-200"><strong>الملاحظات:</strong> ${log.notes || 'لا توجد'}</p>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('student-logs-container').innerHTML = html || '<p class="text-emerald-700">لا توجد تقييمات حتى الآن</p>';
+        }
+
+        // ==================== PARENT DASHBOARD ====================
+        function renderParentDashboard() {
+            let targetParentId = null;
+            if (currentUser.role === 'admin') {
+                const firstParent = db.users.find(u => u.role === 'parent');
+                if (firstParent) targetParentId = firstParent.id;
+            } else {
+                targetParentId = currentUser.id;
+            }
+            
+            const children = db.students.filter(s => s.parentId === targetParentId);
+            let html = '';
+            
+            children.forEach(child => {
+                const childLogs = db.logs.filter(l => l.studentId === child.id).sort((a, b) => new Date(b.date) - new Date(a.date));
+                const latestLog = childLogs[0] || null;
+                const ring = db.rings.find(r => r.id === child.ringId) || { name: 'غير محدد' };
+                
+                html += `
+                    <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-5 rounded-xl border border-gold/20 space-y-4">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h4 class="font-serif text-xl font-bold text-white">${child.name}</h4>
+                                <p class="text-[11px] text-emerald-400 mt-1">الحلقة: ${ring.name}</p>
+                            </div>
+                            <div class="bg-mosque-950/80 px-4 py-2 rounded border border-gold/20 text-center min-w-20">
+                                <span class="text-2xl font-black text-gold-light block">${child.points}</span>
+                                <span class="text-[9px] text-emerald-400 uppercase tracking-widest">النقاط</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-mosque-950 p-4 rounded border border-gold/10 text-xs space-y-2">
+                            <span class="text-gold-light font-bold block border-b border-gold/10 pb-1.5"><i class="fas fa-book-reader"></i> آخر تقييم:</span>
+                            ${latestLog ? `
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div><span class="text-emerald-400 font-bold">الحضور:</span> ${latestLog.attendance === 'early' ? '🌱 باكر' : latestLog.attendance === 'regular' ? '✓ حاضر' : latestLog.attendance === 'late' ? '⏰ متأخر' : '✗ غائب'}</div>
+                                    <div><span class="text-emerald-400 font-bold">السورة:</span> ${latestLog.surah || 'لا يوجد'}</div>
+                                    <div><span class="text-emerald-400 font-bold">الصفحات:</span> من ${latestLog.pageFrom} إلى ${latestLog.pageTo}</div>
+                                    <div><span class="text-emerald-400 font-bold">النقاط:</span> +${latestLog.behavior + latestLog.participation}</div>
+                                    <div class="col-span-2"><span class="text-gold font-bold">الواجب:</span> ${latestLog.homework || 'مراجعة عامة'}</div>
+                                </div>
+                                <div class="pt-2 border-t border-emerald-950/40 mt-1">
+                                    <span class="text-gold block font-bold mb-1">📝 ملاحظات الأستاذ:</span>
+                                    <p class="text-emerald-200 italic">"${latestLog.notes || 'لا توجد ملاحظة'}"</p>
+                                </div>
+                            ` : `
+                                <p class="text-emerald-700 py-1 text-center">لا يوجد أي تقييم مسجل حتى الآن.</p>
+                            `}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('parent-children-container').innerHTML = html || '<div class="col-span-2 text-center py-10 bg-mosque-950/40 rounded border border-gold/10 text-emerald-600">لا يوجد أبناء مسجلين بهذا الحساب</div>';
+        }
+
+        // ==================== TEACHER DASHBOARD ====================
+        let teacherAssignedRing = null;
+
+        function renderTeacherRing() {
+            let targetTeacherId = currentUser.role === 'admin' ? db.users.find(u => u.role === 'teacher')?.id : currentUser.id;
+            teacherAssignedRing = db.rings.find(r => r.teacherId === targetTeacherId);
+            
+            const titleEl = document.getElementById('teacher-ring-title');
+            const tbody = document.getElementById('teacher-matrix-body');
+            tbody.innerHTML = '';
+            
+            if (!teacherAssignedRing) {
+                titleEl.innerText = 'لا توجد حلقة مخصصة لك';
+                tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-emerald-700">الرجاء التوجه للوحة المدير وإنشاء حلقة جديدة</td></tr>';
+                return;
+            }
+            
+            titleEl.innerText = `حلقة المعلم: ${teacherAssignedRing.name}`;
+            
+            const ringStudents = db.students.filter(s => s.ringId === teacherAssignedRing.id);
+            
+            if (ringStudents.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-emerald-700">لا يوجد طلاب مسجلين في هذه الحلقة</td></tr>';
+                return;
+            }
+            
+            const todayStr = new Date().toISOString().split('T')[0];
+            
+            ringStudents.forEach(st => {
+                const log = db.logs.find(l => l.studentId === st.id && l.date === todayStr) || {
+                    attendance: 'regular',
+                    surah: '',
+                    pageFrom: '',
+                    pageTo: '',
+                    behavior: 0,
+                    participation: 0,
+                    notes: '',
+                    homework: ''
+                };
+                
+                const tr = `
+                    <tr class="hover:bg-mosque-800/10 transition-all">
+                        <td class="p-3 font-bold text-white">${st.name}</td>
+                        <td class="p-3">
+                            <select id="att-${st.id}" class="bg-mosque-950 border border-gold/15 rounded p-1.5 text-xs text-white focus:outline-none w-full">
+                                <option value="early" ${log.attendance === 'early' ? 'selected' : ''}>🌱 باكر (+${db.settings.early})</option>
+                                <option value="regular" ${log.attendance === 'regular' ? 'selected' : ''}>✓ حاضر (+${db.settings.regular})</option>
+                                <option value="late" ${log.attendance === 'late' ? 'selected' : ''}>⏰ متأخر (+${db.settings.late})</option>
+                                <option value="absent" ${log.attendance === 'absent' ? 'selected' : ''}>✗ غائب (0)</option>
+                            </select>
+                        </td>
+                        <td class="p-3">
+                            <div class="flex gap-1 items-center">
+                                <input type="text" id="surah-${st.id}" value="${log.surah}" placeholder="السورة" class="bg-mosque-950 border border-gold/15 rounded p-1.5 text-xs text-white w-24">
+                                <input type="number" id="from-${st.id}" value="${log.pageFrom}" placeholder="من" class="bg-mosque-950 border border-gold/15 rounded p-1.5 text-xs text-white w-12 text-center">
+                                <input type="number" id="to-${st.id}" value="${log.pageTo}" placeholder="إلى" class="bg-mosque-950 border border-gold/15 rounded p-1.5 text-xs text-white w-12 text-center">
+                            </div>
+                        </td>
+                        <td class="p-3">
+                            <input type="number" id="beh-${st.id}" value="${log.behavior}" class="bg-mosque-950 border border-gold/15 rounded p-1.5 text-xs text-white w-16 text-center mx-auto block">
+                        </td>
+                        <td class="p-3">
+                            <input type="number" id="part-${st.id}" value="${log.participation}" class="bg-mosque-950 border border-gold/15 rounded p-1.5 text-xs text-white w-16 text-center mx-auto block">
+                        </td>
+                        <td class="p-3">
+                            <input type="text" id="hw-${st.id}" value="${log.homework || ''}" placeholder="الواجب" class="bg-mosque-950 border border-gold/15 rounded p-1.5 text-xs text-gold-light w-full">
+                        </td>
+                        <td class="p-3">
+                            <input type="text" id="notes-${st.id}" value="${log.notes}" placeholder="ملاحظات" class="bg-mosque-950 border border-gold/15 rounded p-1.5 text-xs text-white w-full">
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += tr;
+            });
+        }
+
+        async function saveDailyLogByTeacher() {
+            if (!teacherAssignedRing) return;
+            
+            const ringStudents = db.students.filter(s => s.ringId === teacherAssignedRing.id);
+            const todayStr = new Date().toISOString().split('T')[0];
+            
+            for (const st of ringStudents) {
+                const att = document.getElementById(`att-${st.id}`).value;
+                const surah = document.getElementById(`surah-${st.id}`).value.trim();
+                const from = parseInt(document.getElementById(`from-${st.id}`).value) || 0;
+                const to = parseInt(document.getElementById(`to-${st.id}`).value) || 0;
+                const beh = parseInt(document.getElementById(`beh-${st.id}`).value) || 0;
+                const part = parseInt(document.getElementById(`part-${st.id}`).value) || 0;
+                const hw = document.getElementById(`hw-${st.id}`).value.trim();
+                const notes = document.getElementById(`notes-${st.id}`).value.trim();
+                
+                try {
+                    const response = await fetch(`${API_URL}/api/teacher/save-daily-log`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            studentId: st.id,
+                            date: todayStr,
+                            attendance: att,
+                            surah,
+                            pageFrom: from,
+                            pageTo: to,
+                            behavior: beh,
+                            participation: part,
+                            homework: hw,
+                            notes
+                        })
+                    });
+                    
+                    if (!response.ok) throw new Error('فشل حفظ السجل');
+                } catch (error) {
+                    console.error('خطأ:', error);
+                    showToast('فشل حفظ السجل', 'error');
+                    return;
+                }
+            }
+            
+            await loadDB();
+            renderTeacherRing();
+            showToast('تم حفظ السجل اليومي بنجاح!');
+        }
+
+        // ==================== ADMIN PANEL ====================
+        function renderAdminPanel() {
+            loadAdminRings();
+            loadAdminAccounts();
+            loadAdminSettingsForm();
+        }
+
+        function setAdminSub(subId) {
+            document.getElementById('admin-sub-rings').classList.add('hidden');
+            document.getElementById('admin-sub-accounts').classList.add('hidden');
+            document.getElementById('admin-sub-settings').classList.add('hidden');
+            
+            document.querySelectorAll('.admin-sub-btn').forEach(b => {
+                b.className = 'admin-sub-btn text-emerald-300 px-4 py-2 rounded text-xs font-bold flex items-center gap-2';
+            });
+            
+            document.getElementById('admin-sub-' + subId).classList.remove('hidden');
+            document.getElementById('sub-btn-' + subId).className = 'admin-sub-btn bg-gold/10 text-gold-light px-4 py-2 rounded text-xs font-bold flex items-center gap-2';
+        }
+
+        function loadAdminRings() {
+            const selectTeacher = document.getElementById('admin-ring-teacher');
+            selectTeacher.innerHTML = '';
+            
+            const teachers = db.users.filter(u => u.role === 'teacher');
+            teachers.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.id;
+                opt.textContent = t.displayName;
+                selectTeacher.appendChild(opt);
+            });
+            
+            let html = '';
+            db.rings.forEach(ring => {
+                const teacher = db.users.find(u => u.id === ring.teacherId);
+                const studentCount = db.students.filter(s => s.ringId === ring.id).length;
+                
+                html += `
+                    <div class="bg-mosque-950 p-3 rounded border border-gold/10 flex justify-between items-center">
+                        <div>
+                            <p class="font-bold text-gold-light text-sm">${ring.name}</p>
+                            <p class="text-xs text-emerald-400">${teacher?.displayName || 'بدون معلم'} • ${studentCount} طالب</p>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('admin-rings-list').innerHTML = html;
+        }
+
+        function loadAdminAccounts() {
+            const selectRing = document.getElementById('admin-s-ring');
+            selectRing.innerHTML = '';
+            
+            db.rings.forEach(ring => {
+                const opt = document.createElement('option');
+                opt.value = ring.id;
+                opt.textContent = ring.name;
+                selectRing.appendChild(opt);
+            });
+            
+            let html = '';
+            db.students.forEach(student => {
+                const ring = db.rings.find(r => r.id === student.ringId);
+                
+                html += `
+                    <div class="bg-mosque-950 p-3 rounded border border-gold/10 flex justify-between items-center">
+                        <div>
+                            <p class="font-bold text-gold-light text-sm">${student.name}</p>
+                            <p class="text-xs text-emerald-400">${ring?.name || 'بدون حلقة'} • ${student.points} نقطة</p>
+                        </div>
+                        <button onclick="adminDeleteStudent('${student.id}')" class="text-red-400 hover:text-red-300 text-xs font-bold">حذف</button>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('admin-students-list').innerHTML = html;
+        }
+
+        function loadAdminSettingsForm() {
+            document.getElementById('cfg-early').value = db.settings.early;
+            document.getElementById('cfg-regular').value = db.settings.regular;
+            document.getElementById('cfg-late').value = db.settings.late;
+            document.getElementById('cfg-absent').value = db.settings.absent;
+        }
+
+        async function adminAddRing(event) {
+            event.preventDefault();
+            const name = document.getElementById('admin-ring-name').value;
+            const teacherId = document.getElementById('admin-ring-teacher').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/api/admin/add-ring`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, teacherId, level: 'عام' })
+                });
+                
+                if (!response.ok) throw new Error('فشل إضافة الحلقة');
+                
+                await loadDB();
+                loadAdminRings();
+                document.getElementById('admin-ring-name').value = '';
+                showToast('تم إضافة الحلقة بنجاح!');
+            } catch (error) {
+                console.error('خطأ:', error);
+                showToast('فشل إضافة الحلقة', 'error');
+            }
+        }
+
+        async function adminAddStudent(event) {
+            event.preventDefault();
+            const studentName = document.getElementById('admin-s-name').value;
+            const phone = document.getElementById('admin-p-phone').value;
+            const password = document.getElementById('admin-p-password').value;
+            const ringId = document.getElementById('admin-s-ring').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/api/admin/add-student`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ studentName, phone, password, ringId })
+                });
+                
+                if (!response.ok) throw new Error('فشل إضافة الطالب');
+                
+                const result = await response.json();
+                await loadDB();
+                loadAdminAccounts();
+                
+                document.getElementById('admin-s-name').value = '';
+                document.getElementById('admin-p-phone').value = '';
+                document.getElementById('admin-p-password').value = '';
+                
+                showToast(`تم تسجيل الطالب! اسم المستخدم: ${result.student.name}, كلمة المرور: 123`);
+            } catch (error) {
+                console.error('خطأ:', error);
+                showToast('فشل إضافة الطالب', 'error');
+            }
+        }
+
+        async function adminDeleteStudent(studentId) {
+            showConfirm('هل أنت متأكد من حذف هذا الطالب؟', async () => {
+                try {
+                    const response = await fetch(`${API_URL}/api/admin/student/${studentId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (!response.ok) throw new Error('فشل حذف الطالب');
+                    
+                    await loadDB();
+                    loadAdminAccounts();
+                    showToast('تم حذف الطالب بنجاح!');
+                } catch (error) {
+                    console.error('خطأ:', error);
+                    showToast('فشل حذف الطالب', 'error');
+                }
+            });
+        }
+
+        async function adminSaveSystemSettings(event) {
+            event.preventDefault();
+            
+            try {
+                const response = await fetch(`${API_URL}/api/admin/settings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        early: parseInt(document.getElementById('cfg-early').value),
+                        regular: parseInt(document.getElementById('cfg-regular').value),
+                        late: parseInt(document.getElementById('cfg-late').value),
+                        absent: parseInt(document.getElementById('cfg-absent').value)
+                    })
+                });
+                
+                if (!response.ok) throw new Error('فشل حفظ الإعدادات');
+                
+                await loadDB();
+                showToast('تم حفظ الإعدادات بنجاح!');
+            } catch (error) {
+                console.error('خطأ:', error);
+                showToast('فشل حفظ الإعدادات', 'error');
+            }
+        }
+
+        // ==================== EXPORT ====================
+        async function exportJSONBackup() {
+            try {
+                const response = await fetch(`${API_URL}/api/backup`);
+                if (!response.ok) throw new Error('فشل تصدير النسخة الاحتياطية');
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `alkauthar_backup_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+                
+                showToast('تم تصدير النسخة الاحتياطية بنجاح!');
+            } catch (error) {
+                console.error('خطأ:', error);
+                showToast('فشل تصدير النسخة الاحتياطية', 'error');
+            }
+        }
+
+        // ==================== ADMIN TABS ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            const adminTabs = document.getElementById('admin-tabs');
+            if (adminTabs) {
+                adminTabs.addEventListener('click', (e) => {
+                    const btn = e.target.closest('.admin-sub-btn');
+                    if (btn) {
+                        const subId = btn.id.replace('sub-btn-', '');
+                        setAdminSub(subId);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
