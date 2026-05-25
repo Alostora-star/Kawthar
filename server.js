@@ -225,6 +225,15 @@ app.post('/api/teacher/save-daily-log', (req, res) => {
   }
 
   if (writeDB(db)) {
+    // إرسال إشعار للأهل
+    if (student.parentId) {
+      sendNotificationToParent(
+        student.parentId,
+        `تحديث جديد لـ ${student.name}`,
+        `تم تسجيل حضور وبيانات جديدة من المعلم. اضغط لعرض التفاصيل.`
+      );
+    }
+    
     res.json({ success: true, message: 'تم حفظ السجل بنجاح' });
   } else {
     res.status(500).json({ error: 'فشل حفظ السجل' });
@@ -293,6 +302,15 @@ app.post('/api/admin/add-student', (req, res) => {
   db.students.push(newStudent);
 
   if (writeDB(db)) {
+    // إرسال إشعار للأهل بتسجيل الطالب
+    if (newStudent.parentId) {
+      sendNotificationToParent(
+        newStudent.parentId,
+        `تم تسجيل ${studentName}`,
+        `تم تسجيل ابنك في منظومة الكوثر بنجاح. يمكنك الآن متابعة أدائه.`
+      );
+    }
+    
     res.json({ 
       success: true, 
       student: newStudent,
@@ -450,6 +468,91 @@ app.post('/api/admin/settings', (req, res) => {
   } else {
     res.status(500).json({ error: 'فشل حفظ الإعدادات' });
   }
+});
+
+// ==================== NOTIFICATIONS ENDPOINTS ====================
+
+// تسجيل جهاز للإشعارات
+app.post('/api/notifications/subscribe', (req, res) => {
+  const db = readDB();
+  if (!db) {
+    return res.status(500).json({ error: 'فشل تحميل قاعدة البيانات' });
+  }
+
+  const { userId, subscription } = req.body;
+  
+  if (!db.subscriptions) {
+    db.subscriptions = [];
+  }
+
+  // التحقق من عدم تكرار الاشتراك
+  const exists = db.subscriptions.find(s => s.userId === userId && s.endpoint === subscription.endpoint);
+  if (!exists) {
+    db.subscriptions.push({
+      userId,
+      subscription,
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  if (writeDB(db)) {
+    res.json({ success: true, message: 'تم تفعيل الإشعارات بنجاح' });
+  } else {
+    res.status(500).json({ error: 'فشل تفعيل الإشعارات' });
+  }
+});
+
+// إرسال إشعار للأهل
+function sendNotificationToParent(parentId, title, body) {
+  const db = readDB();
+  if (!db || !db.subscriptions) return;
+
+  const parentSubscriptions = db.subscriptions.filter(s => s.userId === parentId);
+  
+  // في الإنتاج، يمكن استخدام web-push library
+  // هنا نحفظ الإشعار في قاعدة البيانات
+  if (!db.notifications) {
+    db.notifications = [];
+  }
+
+  db.notifications.push({
+    id: 'notif-' + Math.random().toString(36).substr(2, 9),
+    userId: parentId,
+    title,
+    body,
+    timestamp: new Date().toISOString(),
+    read: false
+  });
+
+  writeDB(db);
+}
+
+// الحصول على الإشعارات
+app.get('/api/notifications/:userId', (req, res) => {
+  const db = readDB();
+  if (!db) {
+    return res.status(500).json({ error: 'فشل تحميل قاعدة البيانات' });
+  }
+
+  const notifications = (db.notifications || []).filter(n => n.userId === req.params.userId).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  
+  res.json({ notifications });
+});
+
+// تعليم الإشعار كمقروء
+app.post('/api/notifications/:notificationId/read', (req, res) => {
+  const db = readDB();
+  if (!db) {
+    return res.status(500).json({ error: 'فشل تحميل قاعدة البيانات' });
+  }
+
+  const notification = (db.notifications || []).find(n => n.id === req.params.notificationId);
+  if (notification) {
+    notification.read = true;
+    writeDB(db);
+  }
+
+  res.json({ success: true });
 });
 
 // ==================== LEADERBOARD ENDPOINTS ====================
