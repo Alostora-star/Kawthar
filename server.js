@@ -34,6 +34,13 @@ function writeDB(data) {
   }
 }
 
+// ==================== STATIC FILES ====================
+
+// عرض الصفحة الرئيسية
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 // ==================== API ENDPOINTS ====================
 
 // الحصول على قاعدة البيانات كاملة
