@@ -533,14 +533,14 @@
         // ==================== LOGIN ====================
         async function handleLogin(event) {
             event.preventDefault();
-            const identifier = document.getElementById('login-identifier').value;
+            const username = document.getElementById('login-identifier').value;
             const password = document.getElementById('login-password').value;
             
             try {
                 const response = await fetch(`${API_URL}/api/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ identifier, password })
+                    body: JSON.stringify({ username, password })
                 });
                 
                 if (!response.ok) {
