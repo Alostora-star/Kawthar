@@ -228,24 +228,61 @@
             </section>
 
             <!-- ================= TAB: STUDENT ================= -->
-            <section id="tab-student" class="hidden space-y-8">
-                <div class="bg-gradient-to-l from-mosque-900 to-mosque-950 p-6 rounded-2xl border-r-4 border-gold shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
-                    <div class="space-y-2 relative z-10 text-center md:text-right">
-                        <span class="text-xs bg-gold/15 text-gold-light px-3 py-1 rounded-full font-bold border border-gold/30">بوابة الطالب الخاصة</span>
-                        <h3 class="font-serif text-3xl font-bold text-white mt-1" id="student-welcome-name">أهلاً بك يا بطل القرآن</h3>
-                        <p class="text-sm text-emerald-300 max-w-xl italic" id="student-motivational-quote">"إن الذي ليس في جوفه شيء من القرآن كالبيت الخرب"</p>
+            <section id="tab-student" class="hidden space-y-6">
+                <!-- Student Card Header - مثل الصورة -->
+                <div class="bg-gradient-to-br from-mosque-900 via-mosque-800 to-mosque-950 p-8 rounded-2xl border border-gold/30 shadow-2xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-40 h-40 bg-gold/5 rounded-full blur-3xl"></div>
+                    <div class="relative z-10">
+                        <h3 class="font-serif text-4xl font-bold text-gold-light mb-1" id="student-welcome-name">أهلاً</h3>
+                        <p class="text-emerald-300 text-sm mb-4" id="student-ring-info">الحلقة: --</p>
+                        <p class="text-gold-light italic text-xs mb-6" id="student-motivational-quote">"إن الذي ليس في جوفه شيء من القرآن كالبيت الخرب"</p>
+                        
+                        <div class="flex items-center gap-4">
+                            <div class="bg-gradient-to-br from-gold to-gold-dark p-6 rounded-xl shadow-lg text-center min-w-40">
+                                <p class="text-5xl font-black text-mosque-950" id="student-total-points">0</p>
+                                <p class="text-xs text-mosque-900 font-bold mt-2 uppercase tracking-widest">إجمالي النقاط</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-xl border border-gold/20 space-y-2 shadow-lg">
-                        <span class="text-xs text-emerald-400 font-bold">إجمالي النقاط</span>
-                        <p class="text-4xl font-black text-gold-light" id="student-total-points">0</p>
+                <!-- Statistics Grid - مثل الصورة -->
+                <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-8 rounded-2xl border border-gold/20 shadow-xl space-y-6">
+                    <h4 class="font-bold text-gold-light text-lg flex items-center gap-2">📊 السجل والتقييم الأخير:</h4>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <!-- حضور اليوم -->
+                        <div class="bg-mosque-950 p-4 rounded-lg border border-gold/10 text-center">
+                            <p class="text-xs text-emerald-400 font-bold mb-2">حضور اليوم:</p>
+                            <p class="text-lg font-bold text-gold-light" id="student-attendance-today">--</p>
+                            <p class="text-xs text-emerald-500 mt-1" id="student-attendance-points">--</p>
+                        </div>
+
+                        <!-- السورة المحفوظة -->
+                        <div class="bg-mosque-950 p-4 rounded-lg border border-gold/10 text-center">
+                            <p class="text-xs text-emerald-400 font-bold mb-2">السورة المحفوظة:</p>
+                            <p class="text-lg font-bold text-gold-light" id="student-surah-today">--</p>
+                            <p class="text-xs text-emerald-500 mt-1" id="student-pages-range">--</p>
+                        </div>
+
+                        <!-- النقاط الإضافية -->
+                        <div class="bg-mosque-950 p-4 rounded-lg border border-gold/10 text-center">
+                            <p class="text-xs text-emerald-400 font-bold mb-2">النقاط الإضافية:</p>
+                            <p class="text-lg font-bold text-gold-light" id="student-extra-points">--</p>
+                            <p class="text-xs text-emerald-500 mt-1">سلوك + مشاركة</p>
+                        </div>
+                    </div>
+
+                    <!-- ملاحظات الأستاذ -->
+                    <div class="bg-mosque-900 p-4 rounded-lg border border-gold/10">
+                        <p class="text-xs text-gold font-bold mb-2">📝 ملاحظات أستاذ الحلقة:</p>
+                        <p class="text-sm text-emerald-200 italic" id="student-notes">لم يتم تسجيل أي ملاحظات بعد</p>
                     </div>
                 </div>
 
+                <!-- سجل التقييمات السابقة -->
                 <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-xl border border-gold/20 space-y-4 shadow-xl">
-                    <h4 class="font-bold text-gold-light text-sm"><i class="fas fa-book-reader"></i> آخر التقييمات</h4>
+                    <h4 class="font-bold text-gold-light text-lg flex items-center gap-2">📜 سجل التقييمات السابقة</h4>
                     <div id="student-logs-container" class="space-y-3">
                         <!-- Dynamic -->
                     </div>
