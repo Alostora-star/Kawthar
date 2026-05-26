@@ -1,3 +1,4 @@
+```javascript
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
@@ -11,7 +12,7 @@ const DB_PATH = path.join(__dirname, 'database.json');
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // زيادة الحد الأقصى للمرفقات ليدعم الاستيراد
 app.use(express.static(__dirname));
 
 // دالة لقراءة قاعدة البيانات
@@ -32,7 +33,6 @@ function readDB() {
 // دالة لحفظ قاعدة البيانات
 function writeDB(data) {
   try {
-    // التأكد من أن البيانات تحتوي على جميع الحقول المطلوبة
     if (!data.users) data.users = [];
     if (!data.rings) data.rings = [];
     if (!data.students) data.students = [];
@@ -49,15 +49,9 @@ function writeDB(data) {
   }
 }
 
-// دالة للتحقق من صحة كلمة المرور
-function validatePassword(user, password) {
-  if (!user) return false;
-  return user.password === password;
-}
-
 // ==================== INITIALIZATION ====================
 
-// التحقق من وجود قاعدة البيانات عند بدء الخادم
+// التحقق من وجود قاعدة البيانات وضمان وجود حساب الأدمن السليم دائماً
 if (!fs.existsSync(DB_PATH)) {
   console.log('📝 إنشاء قاعدة بيانات جديدة...');
   const initialDB = {
@@ -83,25 +77,28 @@ if (!fs.existsSync(DB_PATH)) {
     notifications: []
   };
   writeDB(initialDB);
-  console.log('✅ تم إنشاء قاعدة البيانات بنجاح');
+  console.log('✅ تم إنشاء قاعدة البيانات بنجاح مع حساب الأدمن الافتراضي');
 } else {
-  console.log('✅ تم تحميل قاعدة البيانات الموجودة');
+  // للتأكد من وجود مستخدم أدمن على الأقل حال فقدانه
   const db = readDB();
-  if (db) {
-    console.log(`📊 البيانات الموجودة: ${db.students?.length || 0} طالب، ${db.rings?.length || 0} حلقة`);
+  if (db && (!db.users || db.users.length === 0)) {
+    db.users = [
+      {
+        id: 'admin-1',
+        username: 'admin',
+        password: 'admin123',
+        role: 'admin',
+        displayName: 'المدير العام'
+      }
+    ];
+    writeDB(db);
   }
+  console.log('✅ تم تحميل قاعدة البيانات القائمة بنجاح.');
 }
-
-// ==================== STATIC FILES ====================
-
-// عرض الصفحة الرئيسية
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
 
 // ==================== API ENDPOINTS ====================
 
-// تسجيل الدخول
+// مسار تسجيل الدخول المصحح لحل مشكلة قراءة حساب الأدمن وحساسية حالة الحروف والمسافات
 app.post('/api/login', (req, res) => {
   const db = readDB();
   if (!db) {
@@ -109,74 +106,97 @@ app.post('/api/login', (req, res) => {
   }
 
   const { username, password } = req.body;
-  const user = db.users.find(u => u.username === username);
+  if (!username || !password) {
+    return res.status(400).json({ error: 'الرجاء إدخال اسم المستخدم وكلمة المرور' });
+  }
 
-  if (!user || !validatePassword(user, password)) {
+  // البحث عن المستخدم مع تجاهل المسافات الزائدة
+  const user = db.users.find(u => u.username.trim() === username.trim());
+
+  if (!user || user.password.trim() !== password.trim()) {
     return res.status(401).json({ error: 'بيانات الدخول غير صحيحة' });
   }
 
   res.json({ success: true, user });
 });
 
-// الحصول على قاعدة البيانات كاملة
+// الحصول على قاعدة البيانات كاملة للواجهة
 app.get('/api/db', (req, res) => {
   const db = readDB();
   if (!db) {
     return res.status(500).json({ error: 'فشل تحميل قاعدة البيانات' });
   }
-
   res.json(db);
 });
 
-// تحديث السجل اليومي
+// تحديث ورصد السجل اليومي للطلاب والحساب التراكمي للنقاط
 app.post('/api/teacher/log', (req, res) => {
   const db = readDB();
   if (!db) {
     return res.status(500).json({ error: 'فشل تحميل قاعدة البيانات' });
   }
 
-  const { studentId, attendance, surah, pageFrom, pageTo, behavior, participation, homework, notes } = req.body;
+  const { studentId, date, attendance, surah, pageFrom, pageTo, behavior, participation, homework, notes } = req.body;
   const student = db.students.find(s => s.id === studentId);
 
   if (!student) {
-    return res.status(404).json({ error: 'الطالب غير موجود' });
+    return res.status(404).json({ error: 'الطالب غير موجود بالنظام' });
   }
 
-  // حساب النقاط
-  const attendancePoints = db.settings[attendance] || 0;
-  const totalPoints = attendancePoints + behavior + participation;
+  // حساب النقاط الإضافية لليوم
+  const attendancePoints = db.settings[attendance] !== undefined ? db.settings[attendance] : 0;
+  const behaviorPoints = parseInt(behavior) || 0;
+  const participationPoints = parseInt(participation) || 0;
+  const totalDailyPoints = attendancePoints + behaviorPoints + participationPoints;
+
+  // التحقق مما إذا كان هناك سجل سابق لنفس الطالب في نفس اليوم لتجنب تكرار النقاط الكلية
+  const existingLogIndex = db.logs.findIndex(l => l.studentId === studentId && l.date === date);
   
-  student.points += totalPoints;
+  if (existingLogIndex !== -1) {
+    // خصم النقاط القديمة قبل إضافة الجديدة لتحديث رصيده بشكل سليم
+    const oldLog = db.logs[existingLogIndex];
+    const oldAttendancePoints = db.settings[oldLog.attendance] !== undefined ? db.settings[oldLog.attendance] : 0;
+    const oldDailyPoints = oldAttendancePoints + (parseInt(oldLog.behavior) || 0) + (parseInt(oldLog.participation) || 0);
+    
+    student.points = Math.max(0, student.points - oldDailyPoints);
+    
+    // تحديث السجل القائم
+    db.logs[existingLogIndex] = {
+      ...db.logs[existingLogIndex],
+      attendance,
+      surah,
+      pageFrom,
+      pageTo,
+      behavior: behaviorPoints,
+      participation: participationPoints,
+      homework,
+      notes
+    };
+  } else {
+    // إضافة سجل جديد كلياً
+    const newLog = {
+      id: 'log-' + Math.random().toString(36).substr(2, 9),
+      studentId,
+      date,
+      attendance,
+      surah,
+      pageFrom,
+      pageTo,
+      behavior: behaviorPoints,
+      participation: participationPoints,
+      homework,
+      notes
+    };
+    db.logs.push(newLog);
+  }
 
-  const newLog = {
-    id: 'log-' + Math.random().toString(36).substr(2, 9),
-    studentId,
-    date: new Date().toISOString().split('T')[0],
-    attendance,
-    surah,
-    pageFrom,
-    pageTo,
-    behavior,
-    participation,
-    homework,
-    notes
-  };
-
-  db.logs.push(newLog);
+  // إضافة النقاط الجديدة المحسوبة لرصيد الطالب التراكمي
+  student.points += totalDailyPoints;
 
   if (writeDB(db)) {
-    // إرسال إشعار للأهل
-    if (student.parentId) {
-      sendNotificationToParent(
-        student.parentId,
-        `تحديث جديد لـ ${student.name}`,
-        `تم تسجيل حضور وبيانات جديدة من المعلم. اضغط لعرض التفاصيل.`
-      );
-    }
-    
-    res.json({ success: true, message: 'تم حفظ السجل بنجاح' });
+    res.json({ success: true, message: 'تم رصد التقييم اليومي بنجاح' });
   } else {
-    res.status(500).json({ error: 'فشل حفظ السجل' });
+    res.status(500).json({ error: 'فشل حفظ التقييم' });
   }
 });
 
@@ -189,12 +209,12 @@ app.post('/api/admin/add-ring', (req, res) => {
     return res.status(500).json({ error: 'فشل تحميل قاعدة البيانات' });
   }
 
-  const { ringName } = req.body;
+  const { ringName, teacherId } = req.body;
 
   const newRing = {
     id: 'ring-' + Math.random().toString(36).substr(2, 9),
     name: ringName,
-    teacherId: null,
+    teacherId: teacherId || null,
     createdAt: new Date().toISOString()
   };
 
@@ -216,12 +236,10 @@ app.post('/api/admin/add-student', (req, res) => {
 
   const { studentName, username, password, ringId } = req.body;
 
-  // التحقق من عدم تكرار اسم المستخدم
-  if (db.users.find(u => u.username === username)) {
-    return res.status(400).json({ error: 'اسم المستخدم موجود بالفعل' });
+  if (db.users.find(u => u.username.toLowerCase() === username.toLowerCase())) {
+    return res.status(400).json({ error: 'اسم المستخدم موجود ومستعمل بالفعل' });
   }
 
-  // إنشاء حساب الطالب
   const studentUser = {
     id: 'su-' + Math.random().toString(36).substr(2, 9),
     username,
@@ -231,7 +249,6 @@ app.post('/api/admin/add-student', (req, res) => {
   };
   db.users.push(studentUser);
 
-  // تسجيل الطالب
   const newStudent = {
     id: 's-' + Math.random().toString(36).substr(2, 9),
     name: studentName,
@@ -242,11 +259,7 @@ app.post('/api/admin/add-student', (req, res) => {
   db.students.push(newStudent);
 
   if (writeDB(db)) {
-    res.json({ 
-      success: true, 
-      student: newStudent,
-      message: `تم تسجيل الطالب ${studentName} بنجاح`
-    });
+    res.json({ success: true, student: newStudent, message: `تم تسجيل الطالب ${studentName} بنجاح` });
   } else {
     res.status(500).json({ error: 'فشل إضافة الطالب' });
   }
@@ -261,12 +274,10 @@ app.post('/api/admin/add-teacher', (req, res) => {
 
   const { teacherName, username, password } = req.body;
 
-  // التحقق من عدم تكرار اسم المستخدم
-  if (db.users.find(u => u.username === username)) {
-    return res.status(400).json({ error: 'اسم المستخدم موجود بالفعل' });
+  if (db.users.find(u => u.username.toLowerCase() === username.toLowerCase())) {
+    return res.status(400).json({ error: 'اسم المستخدم موجود بالفعل للمعلم' });
   }
 
-  // إنشاء حساب المعلم
   const teacherUser = {
     id: 't-' + Math.random().toString(36).substr(2, 9),
     username,
@@ -277,49 +288,37 @@ app.post('/api/admin/add-teacher', (req, res) => {
   db.users.push(teacherUser);
 
   if (writeDB(db)) {
-    res.json({ 
-      success: true, 
-      teacher: teacherUser,
-      message: `تم تسجيل المعلم ${teacherName} بنجاح`
-    });
+    res.json({ success: true, teacher: teacherUser, message: `تم تسجيل المعلم ${teacherName} بنجاح` });
   } else {
-    res.status(500).json({ error: 'فشل إضافة المعلم' });
+    res.status(500).json({ error: 'فشل تسجيل المعلم' });
   }
 });
 
-// نقل الطالب إلى حلقة أخرى مع نقل النقاط
-app.post('/api/admin/transfer-student', (req, res) => {
+// حذف حلقة قرآنية
+app.delete('/api/admin/ring/:ringId', (req, res) => {
   const db = readDB();
   if (!db) {
-    return res.status(500).json({ error: 'فشل تحميل قاعدة البيانات' });
+    return res.status(500).json({ error: 'قاعدة البيانات غير متوفرة' });
   }
 
-  const { studentId, newRingId } = req.body;
-
-  const student = db.students.find(s => s.id === studentId);
-  if (!student) {
-    return res.status(404).json({ error: 'الطالب غير موجود' });
-  }
-
-  const newRing = db.rings.find(r => r.id === newRingId);
-  if (!newRing) {
-    return res.status(404).json({ error: 'الحلقة غير موجودة' });
-  }
-
-  student.ringId = newRingId;
+  db.rings = db.rings.filter(r => r.id !== req.params.ringId);
+  
+  // فك ارتباط الطلاب بها
+  db.students = db.students.map(s => {
+    if (s.ringId === req.params.ringId) {
+      s.ringId = null;
+    }
+    return s;
+  });
 
   if (writeDB(db)) {
-    res.json({ 
-      success: true, 
-      message: `تم نقل الطالب إلى ${newRing.name} مع الاحتفاظ بـ ${student.points} نقطة`,
-      student
-    });
+    res.json({ success: true, message: 'تم حذف الحلقة فك ارتباط الطلاب بها' });
   } else {
-    res.status(500).json({ error: 'فشل نقل الطالب' });
+    res.status(500).json({ error: 'فشل حذف الحلقة' });
   }
 });
 
-// حذف طالب
+// حذف طالب بالكامل وتفريغ حسابه وسجلاته
 app.delete('/api/admin/student/:studentId', (req, res) => {
   const db = readDB();
   if (!db) {
@@ -331,49 +330,14 @@ app.delete('/api/admin/student/:studentId', (req, res) => {
     return res.status(404).json({ error: 'الطالب غير موجود' });
   }
 
-  // حذف حساب الطالب
   db.users = db.users.filter(u => u.id !== student.userId);
-  
-  // حذف الطالب
   db.students = db.students.filter(s => s.id !== req.params.studentId);
-  
-  // حذف السجلات
   db.logs = db.logs.filter(l => l.studentId !== req.params.studentId);
 
   if (writeDB(db)) {
-    res.json({ success: true, message: 'تم حذف الطالب بنجاح' });
+    res.json({ success: true, message: 'تم حذف الطالب وكافة سجلاته نهائياً من المنظومة' });
   } else {
     res.status(500).json({ error: 'فشل حذف الطالب' });
-  }
-});
-
-// حذف معلم
-app.delete('/api/admin/teacher/:teacherId', (req, res) => {
-  const db = readDB();
-  if (!db) {
-    return res.status(500).json({ error: 'فشل تحميل قاعدة البيانات' });
-  }
-
-  const teacher = db.users.find(u => u.id === req.params.teacherId && u.role === 'teacher');
-  if (!teacher) {
-    return res.status(404).json({ error: 'المعلم غير موجود' });
-  }
-
-  // حذف حساب المعلم
-  db.users = db.users.filter(u => u.id !== req.params.teacherId);
-  
-  // إزالة المعلم من الحلقات
-  db.rings = db.rings.map(ring => {
-    if (ring.teacherId === req.params.teacherId) {
-      ring.teacherId = null;
-    }
-    return ring;
-  });
-
-  if (writeDB(db)) {
-    res.json({ success: true, message: 'تم حذف المعلم بنجاح' });
-  } else {
-    res.status(500).json({ error: 'فشل حذف المعلم' });
   }
 });
 
@@ -396,57 +360,29 @@ app.post('/api/admin/settings', (req, res) => {
   if (writeDB(db)) {
     res.json({ success: true, settings: db.settings });
   } else {
-    res.status(500).json({ error: 'فشل حفظ الإعدادات' });
+    res.status(500).json({ error: 'فشل حفظ الإعدادات بالخادم' });
   }
 });
 
-// ==================== NOTIFICATIONS ENDPOINTS ====================
-
-// تسجيل جهاز للإشعارات
-app.post('/api/notifications/subscribe', (req, res) => {
-  const db = readDB();
-  if (!db) {
-    return res.status(500).json({ error: 'فشل تحميل قاعدة البيانات' });
-  }
-
-  const { userId, subscription } = req.body;
+// استيراد قاعدة البيانات بالكامل واستبدالها بنجاح (المزامنة والاستعادة الآمنة)
+app.post('/api/admin/import-db', (req, res) => {
+  const importedData = req.body;
   
-  if (!db.subscriptions) {
-    db.subscriptions = [];
+  if (!importedData || !importedData.users) {
+    return res.status(400).json({ error: 'بيانات الاستيراد غير صالحة' });
   }
 
-  // التحقق من عدم تكرار الاشتراك
-  const exists = db.subscriptions.find(s => s.userId === userId && s.endpoint === subscription.endpoint);
-  if (!exists) {
-    db.subscriptions.push({
-      userId,
-      subscription,
-      timestamp: new Date().toISOString()
-    });
-  }
-
-  if (writeDB(db)) {
-    res.json({ success: true, message: 'تم تفعيل الإشعارات بنجاح' });
+  const success = writeDB(importedData);
+  if (success) {
+    res.json({ success: true, message: 'تم استعادة واستيراد قاعدة البيانات بنجاح تام' });
   } else {
-    res.status(500).json({ error: 'فشل تفعيل الإشعارات' });
+    res.status(500).json({ error: 'فشل استيراد قاعدة البيانات' });
   }
 });
 
-// الحصول على الإشعارات
-app.get('/api/notifications/:userId', (req, res) => {
-  const db = readDB();
-  if (!db) {
-    return res.status(500).json({ error: 'فشل تحميل قاعدة البيانات' });
-  }
+// ==================== LEADERBOARD & STATS ====================
 
-  const notifications = (db.notifications || []).filter(n => n.userId === req.params.userId).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-  
-  res.json({ notifications });
-});
-
-// ==================== LEADERBOARD ENDPOINTS ====================
-
-// لوحة الشرف
+// لوحة الشرف ونسب تنافس وتكامل الحلقات
 app.get('/api/leaderboard', (req, res) => {
   const db = readDB();
   if (!db) {
@@ -460,74 +396,35 @@ app.get('/api/leaderboard', (req, res) => {
     }))
     .sort((a, b) => b.points - a.points);
 
-  // حساب مجموع نقاط الحلقات (ترتيب حسب المجموع)
+  // حساب مجموع نقاط الحلقات وترتيبها
   const ringAverages = db.rings.map(ring => {
     const ringStudents = db.students.filter(s => s.ringId === ring.id);
     const totalPoints = ringStudents.reduce((sum, s) => sum + s.points, 0);
-    const average = ringStudents.length > 0 ? (totalPoints / ringStudents.length).toFixed(2) : 0;
+    const average = ringStudents.length > 0 ? (totalPoints / ringStudents.length).toFixed(1) : 0;
     
     return {
       ringId: ring.id,
       ringName: ring.name,
       studentCount: ringStudents.length,
       total: totalPoints,
-      average
+      average: parseFloat(average)
     };
   }).sort((a, b) => b.total - a.total);
 
   res.json({
     leaderboard,
-    ringAverages: ringAverages.slice(0, 10) // أفضل 10 حلقات
+    ringAverages
   });
 });
-
-// ==================== KEEP-ALIVE FUNCTION ====================
-
-// دالة للحفاظ على الخادم مستيقظاً
-function keepAlive() {
-  if (process.env.RENDER_EXTERNAL_URL) {
-    const url = process.env.RENDER_EXTERNAL_URL;
-    setInterval(() => {
-      const protocol = url.startsWith('https') ? https : http;
-      protocol.get(url, (res) => {
-        console.log(`✅ Keep-Alive ping: ${res.statusCode}`);
-      }).on('error', (err) => {
-        console.log(`⚠️ Keep-Alive error: ${err.message}`);
-      });
-    }, 14 * 60 * 1000); // كل 14 دقيقة
-  }
-}
-
-// ==================== HELPER FUNCTIONS ====================
-
-// دالة لإرسال إشعار للأهل
-function sendNotificationToParent(parentId, title, body) {
-  const db = readDB();
-  if (!db || !db.subscriptions) return;
-
-  if (!db.notifications) {
-    db.notifications = [];
-  }
-
-  db.notifications.push({
-    id: 'notif-' + Math.random().toString(36).substr(2, 9),
-    userId: parentId,
-    title,
-    body,
-    timestamp: new Date().toISOString(),
-    read: false
-  });
-
-  writeDB(db);
-}
 
 // ==================== START SERVER ====================
 
 const server = app.listen(PORT, () => {
   console.log(`🔔 منظومة الكوثر تعمل على http://localhost:${PORT}`);
-  console.log(`📝 قاعدة البيانات: ${DB_PATH}`);
-  keepAlive();
+  console.log(`📝 قاعدة البيانات النشطة: ${DB_PATH}`);
 });
 
-// منع إغلاق الخادم
+// منع إغلاق الخادم المفاجئ
 server.keepAliveTimeout = 65000;
+
+```
