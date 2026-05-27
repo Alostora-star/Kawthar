@@ -302,7 +302,7 @@
             <div class="bg-gradient-to-l from-mosque-900 to-mosque-950 border border-gold/30 p-4 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-4 shadow-lg">
                 <div class="flex items-center gap-3">
                     <div class="bg-gold/10 p-2.5 rounded-full border border-gold/20">
-                        <i class="fas fa-mosque text-gold text-lg"></i>
+                        <img src="5814283866859048641_5.jpg" class="w-10 h-10 rounded-full border border-gold/40" alt="جامع الكوثر">
                     </div>
                     <div>
                         <h3 class="font-serif text-lg text-gold-light font-bold">منظومة جامع الكوثر لتعليم القرآن الكريم</h3>
@@ -387,24 +387,24 @@
                     </div>
                 </div>
 
-                <!-- Secure Credentials Manager (حفاظاً على أسماء المستخدمين وكلمات السر) -->
+                <!-- Dedicated Student Credentials Lookup (لوحة التراخيص وحسابات الطلاب للنسيان) -->
                 <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-2xl border border-gold/20 shadow-xl space-y-4">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-gold/10 pb-3">
                         <div>
-                            <h4 class="font-serif text-lg font-bold text-gold-light"><i class="fas fa-key text-gold"></i> مدير التراخيص وكلمات مرور المستخدمين</h4>
-                            <p class="text-[11px] text-emerald-400 mt-0.5">خاص بفضيلة الشيخ محمد عبد الفتاح حجازي لمراجعة بيانات الدخول ومنع نسيانها</p>
+                            <h4 class="font-serif text-lg font-bold text-gold-light"><i class="fas fa-key text-gold"></i> لوحة التراخيص وحسابات الطلاب لفضيلة الشيخ</h4>
+                            <p class="text-[11px] text-emerald-400 mt-0.5">خاصة بفضيلة الشيخ محمد عبد الفتاح حجازي لمراجعة بيانات دخول الطلاب ومنع نسيانها</p>
                         </div>
-                        <input type="text" id="admin-creds-search" onkeyup="renderCredentialsTable()" placeholder="البحث عن حساب..." class="bg-[#03110d] border border-gold/20 rounded-lg py-1 px-3 text-xs text-white focus:outline-none focus:border-gold w-full sm:w-48">
+                        <input type="text" id="admin-creds-search" onkeyup="renderCredentialsTable()" placeholder="البحث عن حساب طالب..." class="bg-[#03110d] border border-gold/20 rounded-lg py-1.5 px-3 text-xs text-white focus:outline-none focus:border-gold w-full sm:w-64">
                     </div>
                     <div class="overflow-x-auto rounded-xl">
                         <table class="w-full text-right text-xs">
                             <thead class="bg-mosque-950 text-gold-light border-b border-gold/20">
                                 <tr>
-                                    <th class="p-3">الاسم الكامل</th>
-                                    <th class="p-3">نوع الحساب</th>
+                                    <th class="p-3">اسم الطالب الكامل</th>
+                                    <th class="p-3">أستاذ الحلقة</th>
                                     <th class="p-3">اسم المستخدم</th>
-                                    <th class="p-3">كلمة المرور</th>
-                                    <th class="p-3 text-center">التحكم</th>
+                                    <th class="p-3">كلمة المرور الحالية</th>
+                                    <th class="p-3 text-center">التحكم والنسخ</th>
                                 </tr>
                             </thead>
                             <tbody id="admin-creds-body" class="divide-y divide-emerald-950/20">
@@ -479,6 +479,7 @@
                             <h4 class="font-serif text-sm font-bold text-gold-light border-b border-gold/10 pb-2"><i class="fas fa-user-tie"></i> إضافة حساب أستاذ جديد</h4>
                             <form onsubmit="adminAddTeacher(event)" class="space-y-2">
                                 <input type="text" id="admin-teacher-fullname" placeholder="الاسم الكامل للأستاذ" required class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-3 py-1.5 text-xs text-white">
+                                <input type="text" id="admin-teacher-phone" placeholder="رقم هاتف الأستاذ (واتساب إجباري)" required class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-3 py-1.5 text-xs text-white">
                                 <input type="text" id="admin-teacher-username" placeholder="اسم المستخدم لتسجيل الدخول" required class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-3 py-1.5 text-xs text-white">
                                 <input type="password" id="admin-teacher-password" placeholder="كلمة المرور" required class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-3 py-1.5 text-xs text-white">
                                 <button type="submit" class="w-full bg-gold hover:bg-gold-dark text-mosque-950 font-bold py-1.5 rounded-lg text-xs">إنشاء حساب الأستاذ</button>
@@ -651,131 +652,158 @@
                 </div>
             </section>
 
-            <!-- ================= TAB: INDIVIDUAL STUDENT PANEL ================= -->
+            <!-- ================= TAB: INDIVIDUAL STUDENT PANEL (TABS DIVISION) ================= -->
             <section id="tab-student" class="hidden space-y-6">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 space-y-6">
-                        <!-- Replicating Photo 5814283866859048642.jpg EXACT CARD DESIGN -->
-                        <div class="bg-[#051a14] border border-gold/30 p-6 rounded-[1.5rem] shadow-2xl relative overflow-hidden space-y-4">
-                            <div class="text-center pb-2 border-b border-gold/10">
-                                <h3 class="font-serif text-2xl text-gold-light font-bold">كارت متابعة الأبناء للأهالي</h3>
-                                <p class="text-xs text-emerald-400 font-medium">تقارير الحفظ والتسميع والسلوك المباشرة لأبنائكم</p>
-                            </div>
-
-                            <div class="flex items-center justify-between gap-6 py-4">
-                                <!-- Big Points Display Box -->
-                                <div class="bg-mosque-950 border border-gold/30 px-6 py-4 rounded-xl text-center min-w-[120px]">
-                                    <p class="text-4xl font-black text-gold" id="parent-card-points">0</p>
-                                    <p class="text-[10px] text-emerald-400 font-bold mt-1">إجمالي النقاط</p>
-                                </div>
-
-                                <!-- Student Name and Ring details -->
-                                <div class="text-right space-y-1">
-                                    <h4 class="text-3xl font-bold text-white font-serif" id="parent-card-student-name">--</h4>
-                                    <p class="text-xs text-gold-light font-medium" id="parent-card-ring-name">الأستاذ المشرف: --</p>
-                                </div>
-                            </div>
-
-                            <!-- Evaluation Section -->
-                            <div class="bg-mosque-950/60 p-4 rounded-xl border border-gold/10 space-y-4">
-                                <h5 class="text-xs font-bold text-gold-light flex items-center gap-1.5 border-b border-gold/10 pb-2">
-                                    <i class="fas fa-bookmark text-gold"></i>
-                                    <span>السجل والتقييم الأخير:</span>
-                                </h5>
-
-                                <div class="grid grid-cols-2 gap-4 text-xs">
-                                    <div>
-                                        <p class="text-[10px] text-emerald-400 font-bold">حضور اليوم: 🌿</p>
-                                        <p class="text-white font-bold mt-1" id="parent-card-attendance">--</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-[10px] text-emerald-400 font-bold">السورة المحفوظة:</p>
-                                        <p class="text-white font-bold mt-1" id="parent-card-surah">--</p>
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-2 gap-4 text-xs">
-                                    <div>
-                                        <p class="text-[10px] text-emerald-400 font-bold">عدد الصفحات المنجزة:</p>
-                                        <p class="text-white font-bold mt-1" id="parent-card-pages">0 صفحة</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-[10px] text-emerald-400 font-bold">النقاط الإضافية لليوم:</p>
-                                        <p class="text-gold mt-1 font-bold" id="parent-card-extra-points">0 ن</p>
-                                    </div>
-                                </div>
-
-                                <div class="pt-2 border-t border-emerald-950/40 text-xs">
-                                    <p class="text-[10px] text-gold-light font-bold">الواجب القادم المطلوب:</p>
-                                    <p class="text-white font-bold mt-1" id="parent-card-homework">--</p>
-                                </div>
-
-                                <div class="pt-2 border-t border-emerald-950/40 text-xs">
-                                    <p class="text-[10px] text-gold-light font-bold">📝 ملاحظات أستاذ الحلقة:</p>
-                                    <p class="text-emerald-300 italic mt-1" id="parent-card-notes">"لا يوجد ملاحظات حتى الآن"</p>
-                                </div>
-                            </div>
-                        </div>
+                <!-- Outer Beautiful Shield & Logo (No placeholder, exact verbatim reference to 5814283866859048641_5.jpg) -->
+                <div class="bg-[#051a14] border border-gold/30 p-6 rounded-[2rem] shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center gap-6">
+                    <div class="w-20 h-20 rounded-full border border-gold/40 p-0.5 overflow-hidden shrink-0">
+                        <img src="5814283866859048641_5.jpg" class="w-full h-full object-cover rounded-full" alt="جامع الكوثر">
                     </div>
+                    <div class="text-center md:text-right flex-grow">
+                        <h3 class="font-serif text-2xl text-gold-light font-bold">كارت متابعة الأبناء للأهالي</h3>
+                        <p class="text-xs text-emerald-400">تقارير الحفظ والتسميع والسلوك المباشرة لأبنائكم</p>
+                    </div>
+                </div>
 
-                    <!-- Personal QR Code & Concentrated Daily Schedule (35096.jpg Style) -->
-                    <div class="space-y-6">
-                        <!-- Student Membership Card & QR Code -->
-                        <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-2xl border border-gold/30 shadow-xl text-center space-y-4">
-                            <h4 class="font-serif text-sm font-bold text-gold-light"><i class="fas fa-qrcode"></i> بطاقة الـ QR الخاصة بالدخول الفوري والتحضير</h4>
-                            <p class="text-[10px] text-emerald-300">قم بحفظ هذه البطاقة على هاتفك لتسجيل الحضور والدخول السريع فوراً عند بوابة المسجد.</p>
-                            
-                            <div class="bg-white p-3 rounded-xl shadow-lg inline-block border-2 border-gold mx-auto" id="qrcode-container-render">
-                                <div id="student-personal-qr-element" class="w-32 h-32 flex items-center justify-center bg-gray-100">
-                                    <i class="fas fa-sync-alt animate-spin text-gray-400"></i>
+                <!-- MINI TAB NAVIGATION within student dashboard to split the sections perfectly -->
+                <div class="flex items-center gap-2 overflow-x-auto bg-mosque-900/60 p-2 rounded-2xl border border-gold/15">
+                    <button onclick="switchStudentSubTab('summary')" id="subtab-btn-summary" class="subtab-active-style flex-1 text-center py-2 px-3 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1">
+                        <i class="fas fa-id-card"></i> <span>التقييم واليومية</span>
+                    </button>
+                    <button onclick="switchStudentSubTab('history')" id="subtab-btn-history" class="subtab-inactive-style flex-1 text-center py-2 px-3 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1">
+                        <i class="fas fa-history"></i> <span>السجل التراكمي</span>
+                    </button>
+                    <button onclick="switchStudentSubTab('qr')" id="subtab-btn-qr" class="subtab-inactive-style flex-1 text-center py-2 px-3 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1">
+                        <i class="fas fa-qrcode"></i> <span>بطاقة الهوية QR</span>
+                    </button>
+                    <button onclick="switchStudentSubTab('schedule')" id="subtab-btn-schedule" class="subtab-inactive-style flex-1 text-center py-2 px-3 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1">
+                        <i class="fas fa-calendar-alt"></i> <span>مواقيت الحصص</span>
+                    </button>
+                </div>
+
+                <!-- SUB-TAB CONTENTS -->
+                
+                <!-- 1. SUMMARY & CURRENT STATUS TAB -->
+                <div id="student-subtab-summary" class="student-subtab-content space-y-6">
+                    <div class="bg-gradient-to-b from-[#051a14] to-mosque-950 p-6 rounded-2xl border border-gold/25 shadow-xl space-y-4">
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 py-2 border-b border-gold/10">
+                            <!-- Big Points Display Box -->
+                            <div class="bg-mosque-950 border border-gold/30 px-6 py-4 rounded-xl text-center min-w-[120px]">
+                                <p class="text-4xl font-black text-gold" id="parent-card-points">0</p>
+                                <p class="text-[10px] text-emerald-400 font-bold mt-1">إجمالي النقاط</p>
+                            </div>
+                            <!-- Student Name and Ring details (With Direct WhatsApp Chat button with Teacher) -->
+                            <div class="text-center sm:text-right space-y-2">
+                                <h4 class="text-3xl font-bold text-white font-serif" id="parent-card-student-name">--</h4>
+                                <div class="flex flex-wrap items-center justify-center sm:justify-end gap-2">
+                                    <p class="text-xs text-gold-light font-medium" id="parent-card-ring-name">الأستاذ المشرف: --</p>
+                                    <span id="parent-card-teacher-whatsapp-placeholder"></span>
                                 </div>
                             </div>
-                            
-                            <p class="text-xs text-white font-bold" id="student-personal-token">رمز الدخول: --</p>
                         </div>
 
-                        <!-- Static Concentrated Daily Schedule -->
-                        <div class="bg-[#051a14] p-5 rounded-2xl border border-gold/20 space-y-3">
-                            <h4 class="font-serif text-xs font-bold text-gold-light border-b border-gold/10 pb-2 flex items-center justify-between">
-                                <span>📅 جدول حصص اللقاء اليومي الفعلي</span>
-                                <span class="text-[9px] bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded-lg border border-emerald-500/20 font-bold">ثابت للتركيز</span>
-                            </h4>
-                            <div class="space-y-2 text-xs">
-                                <div class="bg-mosque-950/60 p-2.5 rounded-lg border border-gold/5 flex justify-between">
-                                    <span>الحصة الأولى: ذكر جماعي ودرس</span>
-                                    <span class="text-emerald-400 font-bold">05:00 م - 05:30 م</span>
+                        <!-- Daily Evaluation details layout (Matches exact screenshot layout requirements) -->
+                        <div class="bg-mosque-950/60 p-4 rounded-xl border border-gold/10 space-y-4">
+                            <h5 class="text-xs font-bold text-gold-light flex items-center gap-1.5 border-b border-gold/10 pb-2">
+                                <i class="fas fa-bookmark text-gold"></i>
+                                <span>السجل والتقييم الأخير:</span>
+                            </h5>
+
+                            <div class="grid grid-cols-2 gap-4 text-xs">
+                                <div>
+                                    <p class="text-[10px] text-emerald-400 font-bold">حضور اليوم: 🌿</p>
+                                    <p class="text-white font-bold mt-1" id="parent-card-attendance">--</p>
                                 </div>
-                                <div class="bg-mosque-950/60 p-2.5 rounded-lg border border-gold/5 flex justify-between">
-                                    <span>الحصة الثانية: تسميع قرآن</span>
-                                    <span class="text-gold-light font-bold">05:30 م - 07:00 م</span>
+                                <div>
+                                    <p class="text-[10px] text-emerald-400 font-bold">السورة المحفوظة:</p>
+                                    <p class="text-white font-bold mt-1" id="parent-card-surah">--</p>
                                 </div>
-                                <div class="bg-mosque-950/60 p-2.5 rounded-lg border border-gold/5 flex justify-between">
-                                    <span>الحصة الثالثة: أنشودة أو درس صغير</span>
-                                    <span class="text-emerald-400 font-bold">07:00 م - 07:15 م</span>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4 text-xs">
+                                <div>
+                                    <p class="text-[10px] text-emerald-400 font-bold">عدد الصفحات المنجزة:</p>
+                                    <p class="text-white font-bold mt-1" id="parent-card-pages">0 صفحة</p>
                                 </div>
+                                <div>
+                                    <p class="text-[10px] text-emerald-400 font-bold">النقاط الإضافية لليوم:</p>
+                                    <p class="text-gold mt-1 font-bold" id="parent-card-extra-points">0 ن</p>
+                                </div>
+                            </div>
+
+                            <div class="pt-2 border-t border-emerald-950/40 text-xs">
+                                <p class="text-[10px] text-gold-light font-bold">الواجب القادم المطلوب:</p>
+                                <p class="text-white font-bold mt-1" id="parent-card-homework">--</p>
+                            </div>
+
+                            <div class="pt-2 border-t border-emerald-950/40 text-xs">
+                                <p class="text-[10px] text-gold-light font-bold">📝 ملاحظات أستاذ الحلقة:</p>
+                                <p class="text-emerald-300 italic mt-1" id="parent-card-notes">"لا يوجد ملاحظات حتى الآن"</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Historical Evaluations List -->
-                <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-2xl border border-gold/20 shadow-xl space-y-3">
-                    <h4 class="font-serif text-sm font-bold text-gold-light border-b border-gold/10 pb-2"><i class="fas fa-history"></i> السجل التراكمي لعمليات التحضير والحفظ للأهل</h4>
-                    <div class="overflow-x-auto rounded-xl">
-                        <table class="w-full text-right text-xs">
-                            <thead class="bg-mosque-950 text-gold-light border-b border-gold/20">
-                                <tr>
-                                    <th class="p-3">التاريخ</th>
-                                    <th class="p-3">حالة الحضور</th>
-                                    <th class="p-3">الصفحات والسورة</th>
-                                    <th class="p-3 text-center">النقاط التراكمية اليومية</th>
-                                    <th class="p-3">ملاحظات المعلم</th>
-                                </tr>
-                            </thead>
-                            <tbody id="student-evaluation-logs-body" class="divide-y divide-emerald-950/20">
-                                <!-- Loaded dynamically -->
-                            </tbody>
-                        </table>
+                <!-- 2. MEMORIZATION HISTORY TABLE TAB -->
+                <div id="student-subtab-history" class="student-subtab-content hidden space-y-4">
+                    <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-2xl border border-gold/20 shadow-xl space-y-3">
+                        <h4 class="font-serif text-sm font-bold text-gold-light border-b border-gold/10 pb-2"><i class="fas fa-history"></i> السجل التراكمي لعمليات التحضير والحفظ للأهل</h4>
+                        <div class="overflow-x-auto rounded-xl">
+                            <table class="w-full text-right text-xs">
+                                <thead class="bg-mosque-950 text-gold-light border-b border-gold/20">
+                                    <tr>
+                                        <th class="p-3">التاريخ</th>
+                                        <th class="p-3">حالة الحضور</th>
+                                        <th class="p-3">الصفحات والسورة</th>
+                                        <th class="p-3 text-center">النقاط التراكمية اليومية</th>
+                                        <th class="p-3">ملاحظات المعلم</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="student-evaluation-logs-body" class="divide-y divide-emerald-950/20">
+                                    <!-- Loaded dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. DETACHED PERSONAL QR CODE TAB -->
+                <div id="student-subtab-qr" class="student-subtab-content hidden space-y-4">
+                    <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-2xl border border-gold/30 shadow-xl text-center space-y-4 max-w-sm mx-auto">
+                        <h4 class="font-serif text-sm font-bold text-gold-light"><i class="fas fa-qrcode text-gold"></i> بطاقة الـ QR الخاصة بالدخول الفوري والتحضير السريع</h4>
+                        <p class="text-[10px] text-emerald-300 leading-relaxed">قم بحفظ هذه البطاقة على هاتفك لتسجيل الحضور والدخول السريع فوراً عند بوابة المسجد.</p>
+                        
+                        <div class="bg-white p-3 rounded-xl shadow-lg inline-block border-2 border-gold mx-auto" id="qrcode-container-render">
+                            <div id="student-personal-qr-element" class="w-32 h-32 flex items-center justify-center bg-gray-100">
+                                <i class="fas fa-sync-alt animate-spin text-gray-400"></i>
+                            </div>
+                        </div>
+                        
+                        <p class="text-xs text-white font-bold" id="student-personal-token">رمز الدخول: --</p>
+                    </div>
+                </div>
+
+                <!-- 4. FIXED CLASS TIMINGS TIMETABLE TAB -->
+                <div id="student-subtab-schedule" class="student-subtab-content hidden space-y-4">
+                    <div class="bg-[#051a14] p-5 rounded-2xl border border-gold/20 space-y-3 max-w-md mx-auto">
+                        <h4 class="font-serif text-xs font-bold text-gold-light border-b border-gold/10 pb-2 flex items-center justify-between">
+                            <span>📅 جدول حصص اللقاء اليومي الفعلي</span>
+                            <span class="text-[9px] bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded-lg border border-emerald-500/20 font-bold">ثابت للتركيز</span>
+                        </h4>
+                        <div class="space-y-2 text-xs">
+                            <div class="bg-mosque-950/60 p-2.5 rounded-lg border border-gold/5 flex justify-between items-center">
+                                <span>الحصة الأولى: ذكر جماعي ودرس</span>
+                                <span class="text-emerald-400 font-bold font-mono">05:00 م - 05:30 م</span>
+                            </div>
+                            <div class="bg-mosque-950/60 p-2.5 rounded-lg border border-gold/5 flex justify-between items-center">
+                                <span>الحصة الثانية: تسميع قرآن</span>
+                                <span class="text-gold-light font-bold font-mono">05:30 م - 07:00 م</span>
+                            </div>
+                            <div class="bg-mosque-950/60 p-2.5 rounded-lg border border-gold/5 flex justify-between items-center">
+                                <span>الحصة الثالثة: أنشودة أو درس صغير</span>
+                                <span class="text-emerald-400 font-bold font-mono">07:00 م - 07:15 م</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -1104,6 +1132,28 @@
             }
         }
 
+        // ==================== Student Portal Sub-Tabs Logic ====================
+        function switchStudentSubTab(subTabId) {
+            // Hide all subtab contents
+            document.querySelectorAll(".student-subtab-content").forEach(el => {
+                el.classList.add("hidden");
+            });
+
+            // Show active subtab content
+            document.getElementById(`student-subtab-${subTabId}`).classList.remove("hidden");
+
+            // Handle button classes for active state styling
+            const subtabs = ['summary', 'history', 'qr', 'schedule'];
+            subtabs.forEach(id => {
+                const btn = document.getElementById(`subtab-btn-${id}`);
+                if (id === subTabId) {
+                    btn.className = "flex-1 text-center py-2 px-3 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1 bg-gold text-mosque-950 shadow-md shadow-gold/20";
+                } else {
+                    btn.className = "flex-1 text-center py-2 px-3 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1 bg-mosque-950 text-emerald-300 hover:bg-mosque-800 border border-gold/10";
+                }
+            });
+        }
+
         // ==================== Managing Custom Toast Alerts & Confirmations ====================
         function showToast(message, type = "success") {
             const toast = document.getElementById("custom-toast");
@@ -1177,12 +1227,12 @@
                     memoText = `سورة *${log.surah}* (${log.pages || 0} صفحة)`;
                 }
                 const pagePoints = (log.pages || 0) * (state.settings.pointsPerPage || 5);
-                pointsText = `+${pagePoints} نقطة تسميع وحفظ، و +${(log.behavior || 0) + (log.participation || 0)} نقطة سلوك ومشاركة`;
+                pointsText = `+${pagePoints} (نقاط تسميع وحفظ)، و +${(log.behavior || 0) + (log.participation || 0)} (نقاط سلوك ومشاركة)`;
                 if (log.notes) notesText = log.notes;
                 if (log.homework) homeworkText = log.homework;
             }
 
-            // Exactly matching user formatting requirements and embedding URL inside text with no isolated preview block
+            // Clean template messaging avoiding empty cards, completely unified
             const msg = `🕌 *تقرير المتابعة اليومي في إدارة الحلقات القرآنية والتربوية في جامع الكوثر* 🕌\n` +
                         `تحت اشراف مدير الحلقات القرآنية والتربوية الشيخ *محمد عبد الفتاح حجازي*\n\n` +
                         `نود إعلامكم بالتقرير التربوي لولدكم الحبيب: *${student.name}*\n` +
@@ -1474,27 +1524,16 @@
             const body = document.getElementById("admin-creds-body");
             body.innerHTML = "";
 
-            // Collect all accounts in database
-            const allCreds = [];
+            // Collect student accounts exclusively as requested for the lookup
+            const studentCreds = [];
 
-            // Add teachers
-            state.users.filter(u => u.role === "teacher").forEach(u => {
-                allCreds.push({
-                    displayName: u.displayName,
-                    roleLabel: "أستاذ الحلقة",
-                    username: u.username,
-                    password: u.password,
-                    id: u.id
-                });
-            });
-
-            // Add students
             state.students.forEach(s => {
                 const userLink = state.users.find(u => u.id === s.userId);
+                const teacher = state.users.find(u => u.id === s.teacherId) || { displayName: "غير مخصص" };
                 if (userLink) {
-                    allCreds.push({
+                    studentCreds.push({
                         displayName: s.name,
-                        roleLabel: "طالب وحساب الأهل",
+                        teacherName: teacher.displayName,
                         username: userLink.username,
                         password: userLink.password,
                         id: s.id
@@ -1502,13 +1541,13 @@
                 }
             });
 
-            const filteredCreds = allCreds.filter(c => 
+            const filteredCreds = studentCreds.filter(c => 
                 c.displayName.toLowerCase().includes(search) || 
                 c.username.toLowerCase().includes(search)
             );
 
             if (filteredCreds.length === 0) {
-                body.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-emerald-500 italic">لا يوجد حسابات مطابقة للبحث حالياً.</td></tr>`;
+                body.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-emerald-500 italic">لا يوجد حسابات طلاب مطابقة للبحث حالياً.</td></tr>`;
                 return;
             }
 
@@ -1516,7 +1555,7 @@
                 body.innerHTML += `
                     <tr class="hover:bg-mosque-800/15 transition-all">
                         <td class="p-3 font-bold text-white">${cred.displayName}</td>
-                        <td class="p-3"><span class="bg-emerald-950 text-emerald-300 border border-emerald-500/10 px-2 py-0.5 rounded text-[10px] font-bold">${cred.roleLabel}</span></td>
+                        <td class="p-3 text-emerald-400 font-bold">${cred.teacherName}</td>
                         <td class="p-3 font-mono text-xs text-gold-light select-all">${cred.username}</td>
                         <td class="p-3 font-mono text-xs">
                             <div class="flex items-center gap-1.5 justify-start">
@@ -1562,6 +1601,7 @@
         function adminAddTeacher(e) {
             e.preventDefault();
             const displayName = document.getElementById("admin-teacher-fullname").value.trim();
+            const phone = document.getElementById("admin-teacher-phone").value.trim();
             const username = document.getElementById("admin-teacher-username").value.trim().toLowerCase();
             const password = document.getElementById("admin-teacher-password").value;
 
@@ -1570,19 +1610,26 @@
                 return;
             }
 
+            if (!/^\d{8,15}$/.test(phone)) {
+                showToast("صيغة رقم هاتف الأستاذ غير صحيحة! يرجى إدخال أرقام فقط (مثال: 963940902808)", "error");
+                return;
+            }
+
             const newTeacher = {
                 id: `u-t-${Date.now()}`,
                 username,
                 password,
                 role: "teacher",
-                displayName
+                displayName,
+                phone: phone
             };
 
             state.users.push(newTeacher);
             saveState();
-            showToast("تم إنشاء حساب الأستاذ بنجاح كحلقة مستقلة!");
+            showToast("تم إنشاء حساب الأستاذ بنجاح كحلقة مستقلة وبوابة تواصل واتساب!");
             
             document.getElementById("admin-teacher-fullname").value = "";
+            document.getElementById("admin-teacher-phone").value = "";
             document.getElementById("admin-teacher-username").value = "";
             document.getElementById("admin-teacher-password").value = "";
             
@@ -1943,7 +1990,7 @@
 
             const totalMinutes = hours * 60 + minutes;
 
-            // Updated Strict Class/Attendance Timings Rules:
+            // Strict Timings Rules:
             // - Before 5:00 PM: Early ("حضور باكر") -> (early value pts)
             // - 5:00 PM to 6:00 PM: Regular ("حضور عادي") -> (regular value pts)
             // - After 6:00 PM: Late ("حضور متأخر") -> (late value pts)
@@ -2027,9 +2074,23 @@
                 notes: "لا توجد توجيهات مسجلة بعد"
             };
 
+            // Inject summary details
             document.getElementById("parent-card-points").innerText = student.points;
             document.getElementById("parent-card-student-name").innerText = student.name;
             document.getElementById("parent-card-ring-name").innerText = `الأستاذ المشرف: ${teacher.displayName}`;
+
+            // WhatsApp Direct link with teacher (next to his name)
+            const whatsappPlaceholder = document.getElementById("parent-card-teacher-whatsapp-placeholder");
+            if (teacher.phone) {
+                const formattedTeacherPhone = teacher.phone.replace(/\D/g, ''); 
+                whatsappPlaceholder.innerHTML = `
+                    <a href="https://wa.me/${formattedTeacherPhone}" target="_blank" class="inline-flex items-center gap-1 text-[11px] bg-emerald-800 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-xl font-bold transition-all shadow-md">
+                        <i class="fab fa-whatsapp"></i> تواصل مع الأستاذ
+                    </a>
+                `;
+            } else {
+                whatsappPlaceholder.innerHTML = "";
+            }
 
             let attText = "غائب";
             if (lastLog.attendance === "early") attText = "🌿 حضور باكر";
@@ -2044,44 +2105,48 @@
             document.getElementById("parent-card-homework").innerText = lastLog.homework || "مراجعة اللوح والأحكام";
             document.getElementById("parent-card-notes").innerText = `"${lastLog.notes || 'لا يوجد ملاحظات مسجلة اليوم'}"`;
 
+            // QR Code rendering
             const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${student.id}`;
             document.getElementById("student-personal-qr-element").innerHTML = `<img src="${qrUrl}" alt="QR Code" class="w-32 h-32">`;
             document.getElementById("student-personal-token").innerText = `رمز الدخول: ${student.id}`;
 
+            // History tab content list
             const logsBody = document.getElementById("student-evaluation-logs-body");
             logsBody.innerHTML = "";
 
             if (studentLogs.length === 0) {
                 logsBody.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-emerald-600 font-bold">لا يوجد تقييمات سابقة مسجلة في الروزنامة بعد.</td></tr>`;
-                return;
+            } else {
+                studentLogs.forEach(lg => {
+                    let statusLabel = "غائب";
+                    if (lg.attendance === "early") statusLabel = "🌱 حضور باكر";
+                    else if (lg.attendance === "regular") statusLabel = "حضور عادي";
+                    else if (lg.attendance === "late") statusLabel = "⏰ متأخر";
+
+                    const pagePoints = (lg.pages || 0) * (state.settings.pointsPerPage || 5);
+                    const attPts = state.settings[lg.attendance] || 0;
+
+                    logsBody.innerHTML += `
+                        <tr class="hover:bg-mosque-800/10 border-b border-emerald-950/20">
+                            <td class="p-3 font-mono text-[11px]">${lg.date}</td>
+                            <td class="p-3 text-emerald-400 font-bold">${statusLabel} (+${attPts} ن)</td>
+                            <td class="p-3 text-xs">
+                                ${lg.surah ? `سورة ${lg.surah} (${lg.pages} صفحة مسمعة)` : 'لم يسمع اليوم'}
+                            </td>
+                            <td class="p-3 text-center font-bold text-gold-light">
+                                +${attPts + pagePoints + lg.behavior + lg.participation} ن
+                            </td>
+                            <td class="p-3 text-xs text-emerald-300">
+                                <p>${lg.notes || 'لا يوجد ملاحظات'}</p>
+                                ${lg.homework ? `<p class="text-[10px] text-gold-light mt-0.5"><strong>الواجب:</strong> ${lg.homework}</p>` : ''}
+                            </td>
+                        </tr>
+                    `;
+                });
             }
 
-            studentLogs.forEach(lg => {
-                let statusLabel = "غائب";
-                if (lg.attendance === "early") statusLabel = "🌱 حضور باكر";
-                else if (lg.attendance === "regular") statusLabel = "حضور عادي";
-                else if (lg.attendance === "late") statusLabel = "⏰ متأخر";
-
-                const pagePoints = (lg.pages || 0) * (state.settings.pointsPerPage || 5);
-                const attPts = state.settings[lg.attendance] || 0;
-
-                logsBody.innerHTML += `
-                    <tr class="hover:bg-mosque-800/10 border-b border-emerald-950/20">
-                        <td class="p-3 font-mono text-[11px]">${lg.date}</td>
-                        <td class="p-3 text-emerald-400 font-bold">${statusLabel} (+${attPts} ن)</td>
-                        <td class="p-3 text-xs">
-                            ${lg.surah ? `سورة ${lg.surah} (${lg.pages} صفحة مسمعة)` : 'لم يسمع اليوم'}
-                        </td>
-                        <td class="p-3 text-center font-bold text-gold-light">
-                            +${attPts + pagePoints + lg.behavior + lg.participation} ن
-                        </td>
-                        <td class="p-3 text-xs text-emerald-300">
-                            <p>${lg.notes || 'لا يوجد ملاحظات'}</p>
-                            ${lg.homework ? `<p class="text-[10px] text-gold-light mt-0.5"><strong>الواجب:</strong> ${lg.homework}</p>` : ''}
-                        </td>
-                    </tr>
-                `;
-            });
+            // Default internal sub-tab to first one "summary"
+            switchStudentSubTab('summary');
         }
 
         // ==================== JSON Data Export & Imports ====================
