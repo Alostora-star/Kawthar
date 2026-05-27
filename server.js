@@ -420,8 +420,8 @@ app.get('/api/leaderboard', (req, res) => {
 // ==================== START SERVER ====================
 
 const server = app.listen(PORT, () => {
-  console.log(`🔔 منظومة الكوثر تعمل على http://localhost:${PORT}`);
-  console.log(`📝 قاعدة البيانات النشطة: ${DB_PATH}`);
+  console.log("🔔 منظومة الكوثر تعمل على http://localhost:${PORT}");
+  console.log("📝 قاعدة البيانات النشطة: ${DB_PATH}");
 });
 
 // منع إغلاق الخادم المفاجئ
