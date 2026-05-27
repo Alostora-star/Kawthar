@@ -259,7 +259,7 @@ app.post('/api/admin/add-student', (req, res) => {
   db.students.push(newStudent);
 
   if (writeDB(db)) {
-    res.json({ success: true, student: newStudent, message: `تم تسجيل الطالب ${studentName} بنجاح` });
+    res.json({ success: true, student: newStudent, message: "تم تسجيل الطالب ${studentName} بنجاح" });
   } else {
     res.status(500).json({ error: 'فشل إضافة الطالب' });
   }
