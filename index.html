@@ -101,6 +101,29 @@
         </div>
     </div>
 
+    <!-- IN-APP NOTIFICATIONS DRAWER MODAL -->
+    <div id="notifications-drawer" class="fixed inset-y-0 left-0 z-50 w-full max-w-sm bg-gradient-to-b from-mosque-900 to-mosque-950 border-r border-gold/30 shadow-2xl p-6 hidden transform -translate-x-full transition-transform duration-300 flex flex-col justify-between">
+        <div>
+            <div class="flex justify-between items-center border-b border-gold/25 pb-4 mb-4">
+                <h4 class="font-serif text-lg font-bold text-gold-light flex items-center gap-2">
+                    <i class="fas fa-bell text-gold"></i>
+                    <span>تنبيهات وإشعارات جامع الكوثر</span>
+                </h4>
+                <button onclick="toggleNotificationsDrawer(false)" class="text-emerald-400 hover:text-red-400 text-xl"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="flex justify-between items-center mb-4">
+                <button onclick="requestNotificationPermission()" class="bg-gold/10 hover:bg-gold text-gold-light hover:text-mosque-950 px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all">
+                    🔔 تفعيل تنبيهات الهاتف الفورية
+                </button>
+                <button onclick="clearAllNotifications()" class="text-red-400 hover:text-red-300 text-[10px] font-bold">مسح الكل</button>
+            </div>
+            <div class="space-y-3 overflow-y-auto max-h-[60vh]" id="notifications-list-container">
+                <!-- Notifications load here -->
+            </div>
+        </div>
+        <button onclick="toggleNotificationsDrawer(false)" class="w-full bg-mosque-800 text-gold-light text-xs font-bold py-2.5 rounded-xl border border-gold/20">إغلاق التنبيهات</button>
+    </div>
+
     <!-- Contact Info Modal -->
     <div id="contact-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 hidden opacity-0 transition-all duration-300">
         <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-3xl border border-gold/40 shadow-2xl max-w-md w-full space-y-5">
@@ -182,7 +205,7 @@
                 <h3 class="text-sm">منظومة جامع الكوثر لتعليم القرآن الكريم</h3>
             </div>
             <div>
-                <img src="5814283866859048641_5.jpg" class="w-16 h-16 rounded-full border border-gold" alt="شعار جامع الكوثر" onerror="this.src='https://placehold.co/150x150/0b2e25/C5A85C?text=Al-Kauthar'">
+                <img src="5814283866859048641_5.jpg" class="mosque-logo-img w-16 h-16 rounded-full border border-gold" alt="شعار جامع الكوثر" onerror="this.src='5814283866859048641_5.jpg'">
             </div>
         </div>
         <h1 class="text-2xl font-serif font-bold text-center mt-2">تقرير تفصيلي للحلقات القرآنية التربوية الصيفية</h1>
@@ -193,13 +216,13 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-4">
                 <div class="w-14 h-14 rounded-full border-2 border-gold p-0.5 overflow-hidden">
-                    <img src="5814283866859048641_5.jpg" class="w-full h-full object-cover rounded-full" alt="جامع الكوثر" onerror="this.src='https://placehold.co/150x150/0b2e25/C5A85C?text=Al-Kauthar'">
+                    <img src="5814283866859048641_5.jpg" class="mosque-logo-img w-full h-full object-cover rounded-full" alt="جامع الكوثر" onerror="this.src='5814283866859048641_5.jpg'">
                 </div>
                 <div>
-                    <h2 class="font-serif text-lg md:text-xl font-bold text-gold-light">نظام الحلقات القرآنية التربوية الصيفية</h2>
+                    <h2 class="font-serif text-lg md:text-xl font-bold text-gold-light">منظومة الحلقات القرآنية التربوية الصيفية</h2>
                     <span class="text-xs text-emerald-400 font-bold flex items-center gap-1.5 mt-0.5">
                         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span id="current-user-fullname">فضيلة الشيخ محمد عبد الفتاح حجازي</span>
+                        <span id="current-user-fullname" class="font-bold">فضيلة الشيخ محمد عبد الفتاح حجازي</span>
                     </span>
                 </div>
             </div>
@@ -209,7 +232,13 @@
             </div>
 
             <div class="flex items-center gap-3">
-                <button onclick="toggleContactModal(true)" class="bg-gold hover:bg-gold-dark text-mosque-950 font-bold text-xs px-3 py-2 rounded-xl flex items-center gap-1">
+                <!-- Notification Bell Icon (With Red Badge Count) -->
+                <button onclick="toggleNotificationsDrawer(true)" class="relative bg-mosque-850 hover:bg-mosque-800 text-gold hover:text-white p-2.5 rounded-full border border-gold/20 transition-all">
+                    <i class="fas fa-bell text-lg"></i>
+                    <span id="notifications-badge" class="hidden absolute -top-1 -right-1 bg-red-600 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">0</span>
+                </button>
+
+                <button onclick="toggleContactModal(true)" class="bg-gold hover:bg-gold-dark text-mosque-950 font-bold text-xs px-3 py-2.5 rounded-xl flex items-center gap-1">
                     <i class="fas fa-phone-alt"></i> التواصل
                 </button>
                 <button onclick="logout()" class="text-red-400 hover:text-red-300 font-bold text-sm flex items-center gap-1 shrink-0 transition-all">
@@ -232,7 +261,7 @@
             <div class="text-center space-y-2">
                 <div class="flex justify-center mb-2">
                     <div class="w-36 h-36 rounded-full border-4 border-gold/80 p-1 bg-mosque-950 overflow-hidden shadow-xl">
-                        <img src="5814283866859048641_5.jpg" class="w-full h-full object-cover rounded-full" alt="شعار جامع الكوثر" onerror="this.src='https://placehold.co/150x150/0b2e25/C5A85C?text=Al-Kauthar'">
+                        <img src="5814283866859048641_5.jpg" class="mosque-logo-img w-full h-full object-cover rounded-full" alt="شعار جامع الكوثر" onerror="this.src='5814283866859048641_5.jpg'">
                     </div>
                 </div>
                 <h2 class="font-serif text-3xl text-gold-light font-bold">جامع الكوثر</h2>
@@ -302,7 +331,7 @@
             <div class="bg-gradient-to-l from-mosque-900 to-mosque-950 border border-gold/30 p-4 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-4 shadow-lg">
                 <div class="flex items-center gap-3">
                     <div class="bg-gold/10 p-2.5 rounded-full border border-gold/20">
-                        <img src="5814283866859048641_5.jpg" class="w-10 h-10 rounded-full border border-gold/40" alt="جامع الكوثر">
+                        <img src="5814283866859048641_5.jpg" class="mosque-logo-img w-10 h-10 rounded-full border border-gold/40" alt="جامع الكوثر">
                     </div>
                     <div>
                         <h3 class="font-serif text-lg text-gold-light font-bold">منظومة جامع الكوثر لتعليم القرآن الكريم</h3>
@@ -342,88 +371,61 @@
                 </div>
             </div>
 
-            <!-- ================= TAB: MANAGER / ADMIN DASHBOARD ================= -->
+            <!-- ================= TAB: MANAGER / ADMIN DASHBOARD (PARTITIONED) ================= -->
             <section id="tab-admin" class="hidden space-y-6">
-                <!-- Upper Summary Stats Card Grid -->
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="bg-[#051a14] p-5 rounded-2xl border border-gold/20 shadow-lg text-center">
-                        <i class="fas fa-user-graduate text-gold text-2xl mb-2"></i>
-                        <p class="text-2xl font-black text-white" id="stat-total-students">0</p>
-                        <p class="text-[11px] text-emerald-400 font-bold mt-1">إجمالي الطلاب</p>
-                    </div>
-                    <div class="bg-[#051a14] p-5 rounded-2xl border border-gold/20 shadow-lg text-center">
-                        <i class="fas fa-chalkboard-teacher text-gold text-2xl mb-2"></i>
-                        <p class="text-2xl font-black text-white" id="stat-total-teachers">0</p>
-                        <p class="text-[11px] text-emerald-400 font-bold mt-1">إجمالي الأساتذة</p>
-                    </div>
-                    <div class="bg-[#051a14] p-5 rounded-2xl border border-gold/20 shadow-lg text-center">
-                        <i class="fas fa-star text-gold text-2xl mb-2"></i>
-                        <p class="text-2xl font-black text-white" id="stat-total-points">0</p>
-                        <p class="text-[11px] text-emerald-400 font-bold mt-1">إجمالي نقاط الطلاب</p>
-                    </div>
-                    <div class="bg-[#051a14] p-5 rounded-2xl border border-gold/20 shadow-lg text-center">
-                        <i class="fas fa-calendar-day text-gold text-2xl mb-2"></i>
-                        <p class="text-sm font-black text-white" id="stat-active-day">اليوم</p>
-                        <p class="text-[11px] text-emerald-400 font-bold mt-1">التقويم والنشاط الفعال</p>
-                    </div>
+                
+                <!-- Admin Sub-Tabs Navigation for Partitioned View -->
+                <div class="flex items-center gap-2 overflow-x-auto bg-mosque-900/60 p-2 rounded-2xl border border-gold/15 no-print">
+                    <button onclick="switchAdminSubTab('overview')" id="adminsub-btn-overview" class="flex-grow text-center py-2 px-3 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1.5 bg-gold text-mosque-950 shadow-md">
+                        <i class="fas fa-chart-pie"></i> <span>الرئيسية والإحصائيات</span>
+                    </button>
+                    <button onclick="switchAdminSubTab('users')" id="adminsub-btn-users" class="flex-grow text-center py-2 px-3 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1.5 bg-mosque-950 text-emerald-300 hover:bg-mosque-800 border border-gold/10">
+                        <i class="fas fa-users"></i> <span>إضافة الحسابات والطلاب</span>
+                    </button>
+                    <button onclick="switchAdminSubTab('credentials')" id="adminsub-btn-credentials" class="flex-grow text-center py-2 px-3 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1.5 bg-mosque-950 text-emerald-300 hover:bg-mosque-800 border border-gold/10">
+                        <i class="fas fa-key"></i> <span>مدير كلمات السر والكرات</span>
+                    </button>
+                    <button onclick="switchAdminSubTab('activities')" id="adminsub-btn-activities" class="flex-grow text-center py-2 px-3 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1.5 bg-mosque-950 text-emerald-300 hover:bg-mosque-800 border border-gold/10">
+                        <i class="fas fa-camera-retro"></i> <span>الأنشطة وشعار الجامع</span>
+                    </button>
+                    <button onclick="switchAdminSubTab('settings')" id="adminsub-btn-settings" class="flex-grow text-center py-2 px-3 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1.5 bg-mosque-950 text-emerald-300 hover:bg-mosque-800 border border-gold/10">
+                        <i class="fas fa-sliders-h"></i> <span>النقاط وقاعدة البيانات</span>
+                    </button>
                 </div>
 
-                <!-- Admin Action Controls / Database Management -->
-                <div class="bg-mosque-900 border border-gold/20 rounded-2xl p-4 flex flex-wrap gap-4 items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <span class="text-gold font-bold text-sm"><i class="fas fa-database"></i> إدارة المنظومة وقاعدة البيانات:</span>
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                        <button onclick="exportJSONBackup()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1">
-                            <i class="fas fa-download"></i> تصدير النسخة الاحتياطية (JSON)
-                        </button>
-                        <label class="bg-gold hover:bg-gold-dark text-mosque-950 font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1 cursor-pointer">
-                            <i class="fas fa-upload"></i> استيراد قاعدة البيانات (JSON)
-                            <input type="file" id="import-db-input" class="hidden" accept=".json" onchange="importJSONBackup(event)">
-                        </label>
-                        <button onclick="printAdminReports()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1">
-                            <i class="fas fa-print"></i> طباعة التقارير الورقية (PDF)
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Dedicated Student Credentials Lookup (لوحة التراخيص وحسابات الطلاب للنسيان) -->
-                <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-2xl border border-gold/20 shadow-xl space-y-4">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-gold/10 pb-3">
-                        <div>
-                            <h4 class="font-serif text-lg font-bold text-gold-light"><i class="fas fa-key text-gold"></i> لوحة التراخيص وحسابات الطلاب لفضيلة الشيخ</h4>
-                            <p class="text-[11px] text-emerald-400 mt-0.5">خاصة بفضيلة الشيخ محمد عبد الفتاح حجازي لمراجعة بيانات دخول الطلاب ومنع نسيانها</p>
+                <!-- SUB-TAB 1: OVERVIEW & GENERAL STATISTICS -->
+                <div id="admin-subtab-overview" class="admin-subtab-content space-y-6">
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="bg-[#051a14] p-5 rounded-2xl border border-gold/20 shadow-lg text-center">
+                            <i class="fas fa-user-graduate text-gold text-2xl mb-2"></i>
+                            <p class="text-2xl font-black text-white" id="stat-total-students">0</p>
+                            <p class="text-[11px] text-emerald-400 font-bold mt-1">إجمالي الطلاب</p>
                         </div>
-                        <input type="text" id="admin-creds-search" onkeyup="renderCredentialsTable()" placeholder="البحث عن حساب طالب..." class="bg-[#03110d] border border-gold/20 rounded-lg py-1.5 px-3 text-xs text-white focus:outline-none focus:border-gold w-full sm:w-64">
+                        <div class="bg-[#051a14] p-5 rounded-2xl border border-gold/20 shadow-lg text-center">
+                            <i class="fas fa-chalkboard-teacher text-gold text-2xl mb-2"></i>
+                            <p class="text-2xl font-black text-white" id="stat-total-teachers">0</p>
+                            <p class="text-[11px] text-emerald-400 font-bold mt-1">إجمالي الأساتذة</p>
+                        </div>
+                        <div class="bg-[#051a14] p-5 rounded-2xl border border-gold/20 shadow-lg text-center">
+                            <i class="fas fa-star text-gold text-2xl mb-2"></i>
+                            <p class="text-2xl font-black text-white" id="stat-total-points">0</p>
+                            <p class="text-[11px] text-emerald-400 font-bold mt-1">إجمالي نقاط الطلاب</p>
+                        </div>
+                        <div class="bg-[#051a14] p-5 rounded-2xl border border-gold/20 shadow-lg text-center">
+                            <i class="fas fa-calendar-day text-gold text-2xl mb-2"></i>
+                            <p class="text-sm font-black text-white" id="stat-active-day">اليوم</p>
+                            <p class="text-[11px] text-emerald-400 font-bold mt-1">التقويم والنشاط الفعال</p>
+                        </div>
                     </div>
-                    <div class="overflow-x-auto rounded-xl">
-                        <table class="w-full text-right text-xs">
-                            <thead class="bg-mosque-950 text-gold-light border-b border-gold/20">
-                                <tr>
-                                    <th class="p-3">اسم الطالب الكامل</th>
-                                    <th class="p-3">أستاذ الحلقة</th>
-                                    <th class="p-3">اسم المستخدم</th>
-                                    <th class="p-3">كلمة المرور الحالية</th>
-                                    <th class="p-3 text-center">التحكم والنسخ</th>
-                                </tr>
-                            </thead>
-                            <tbody id="admin-creds-body" class="divide-y divide-emerald-950/20">
-                                <!-- Loaded dynamically via Javascript -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
 
-                <!-- Leaderboard & Management Panels -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Left: Leaderboard & Attendance Table -->
-                    <div class="lg:col-span-2 bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-2xl border border-gold/20 shadow-xl space-y-4">
+                    <!-- Leaderboard Table -->
+                    <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-2xl border border-gold/20 shadow-xl space-y-4">
                         <div class="flex justify-between items-center border-b border-gold/10 pb-3">
                             <h4 class="font-serif text-lg font-bold text-gold-light"><i class="fas fa-trophy text-gold"></i> جدول صدارة الطلاب في الحلقات</h4>
                             <input type="text" id="admin-student-search" onkeyup="renderAdminStudentsTable()" placeholder="بحث سريع عن طالب..." class="bg-[#03110d] border border-gold/20 rounded-lg py-1 px-3 text-xs text-white focus:outline-none focus:border-gold">
                         </div>
                         <div id="admin-empty-students-warning" class="hidden text-center py-8 text-xs text-amber-500">
-                            <i class="fas fa-exclamation-circle text-2xl mb-1 block"></i> لا يوجد طلاب مسجلون حالياً. ابدأ بإضافة أساتذة ثم طلاب من القائمة الجانبية.
+                            <i class="fas fa-exclamation-circle text-2xl mb-1 block"></i> لا يوجد طلاب مسجلون حالياً. انتقل لتبويب الإضافة من القائمة أعلاه.
                         </div>
                         <div class="overflow-x-auto rounded-xl">
                             <table class="w-full text-right text-xs" id="admin-students-table">
@@ -443,13 +445,98 @@
                             </table>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Right: Creator Tools, Story/Snippet Upload, Activities, Settings -->
-                    <div class="space-y-6">
-                        <!-- Upload Daily Stories / Highlights -->
+                <!-- SUB-TAB 2: ADD USERS & STUDENTS -->
+                <div id="admin-subtab-users" class="admin-subtab-content hidden space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Add Teacher Panel -->
+                        <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-2xl border border-gold/20 space-y-4 shadow-xl">
+                            <h4 class="font-serif text-sm font-bold text-gold-light border-b border-gold/10 pb-2"><i class="fas fa-user-tie"></i> إضافة حساب أستاذ جديد</h4>
+                            <form onsubmit="adminAddTeacher(event)" class="space-y-2">
+                                <input type="text" id="admin-teacher-fullname" placeholder="الاسم الكامل للأستاذ" required class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-3 py-1.5 text-xs text-white">
+                                <input type="text" id="admin-teacher-phone" placeholder="رقم هاتف الأستاذ (واتساب إجباري)" required class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-3 py-1.5 text-xs text-white">
+                                <input type="text" id="admin-teacher-username" placeholder="اسم المستخدم لتسجيل الدخول" required class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-3 py-1.5 text-xs text-white">
+                                <input type="password" id="admin-teacher-password" placeholder="كلمة المرور" required class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-3 py-1.5 text-xs text-white">
+                                <button type="submit" class="w-full bg-gold hover:bg-gold-dark text-mosque-950 font-bold py-2 rounded-lg text-xs">إنشاء حساب الأستاذ</button>
+                            </form>
+                        </div>
+
+                        <!-- Add Student Account Form with WhatsApp enforcement -->
+                        <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-2xl border border-gold/20 space-y-4 shadow-xl">
+                            <h4 class="font-serif text-sm font-bold text-gold-light border-b border-gold/10 pb-2"><i class="fas fa-user-plus"></i> إضافة حساب طالب جديد</h4>
+                            <form onsubmit="adminAddStudent(event)" class="space-y-2">
+                                <input type="text" id="admin-student-fullname" placeholder="الاسم الكامل للطالب" required class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-3 py-1.5 text-xs text-white">
+                                <input type="text" id="admin-student-username" placeholder="اسم المستخدم للطالب" required class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-3 py-1.5 text-xs text-white">
+                                <input type="password" id="admin-student-password" placeholder="كلمة المرور للطالب" required class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-3 py-1.5 text-xs text-white">
+                                
+                                <div class="space-y-1">
+                                    <label class="text-[10px] text-emerald-400 font-bold">رقم واتساب ولي الأمر (إجباري للتقارير):</label>
+                                    <input type="tel" id="admin-student-whatsapp" placeholder="مثال: 963940902808" required class="w-full bg-[#03110d] border border-gold/30 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-gold">
+                                    <p class="text-[9px] text-emerald-600 font-bold">أدخل الرمز الدولي دون أصفار أو علامة + (سوريا تبدأ بـ 963)</p>
+                                </div>
+                                
+                                <div class="space-y-1">
+                                    <label class="text-[10px] text-emerald-400">ربطه بـأستاذ الحلقة:</label>
+                                    <select id="admin-student-teacher-id" class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-3 py-1.5 text-xs text-white" required>
+                                        <!-- Loaded dynamically -->
+                                    </select>
+                                </div>
+                                <button type="submit" class="w-full bg-gold hover:bg-gold-dark text-mosque-950 font-bold py-2 rounded-lg text-xs">حفظ الحساب وتوليد الـ QR</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-TAB 3: USER CREDENTIALS & LOGIN CARDS -->
+                <div id="admin-subtab-credentials" class="admin-subtab-content hidden space-y-6">
+                    <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-2xl border border-gold/20 shadow-xl space-y-4">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-gold/10 pb-3">
+                            <div>
+                                <h4 class="font-serif text-lg font-bold text-gold-light"><i class="fas fa-key text-gold"></i> لوحة التراخيص وحسابات الطلاب لفضيلة الشيخ</h4>
+                                <p class="text-[11px] text-emerald-400 mt-0.5">خاصة بفضيلة الشيخ محمد عبد الفتاح حجازي لمراجعة بيانات دخول الطلاب ومنع نسيانها</p>
+                            </div>
+                            <input type="text" id="admin-creds-search" onkeyup="renderCredentialsTable()" placeholder="البحث عن حساب طالب..." class="bg-[#03110d] border border-gold/20 rounded-lg py-1.5 px-3 text-xs text-white focus:outline-none focus:border-gold w-full sm:w-64">
+                        </div>
+                        <div class="overflow-x-auto rounded-xl">
+                            <table class="w-full text-right text-xs">
+                                <thead class="bg-mosque-950 text-gold-light border-b border-gold/20">
+                                    <tr>
+                                        <th class="p-3">اسم الطالب الكامل</th>
+                                        <th class="p-3">أستاذ الحلقة</th>
+                                        <th class="p-3">اسم المستخدم</th>
+                                        <th class="p-3">كلمة المرور الحالية</th>
+                                        <th class="p-3 text-center">التحكم والنسخ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-creds-body" class="divide-y divide-emerald-950/20">
+                                    <!-- Loaded dynamically via Javascript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-TAB 4: ACTIVITIES & LOGO MEDIA -->
+                <div id="admin-subtab-activities" class="admin-subtab-content hidden space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Dynamic Mosque Logo Change Tool -->
                         <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-5 rounded-2xl border border-gold/20 space-y-3">
                             <h4 class="font-serif text-sm font-bold text-gold-light border-b border-gold/10 pb-2 flex items-center gap-1">
                                 <i class="fas fa-image text-gold"></i>
+                                <span>تغيير صورة بروفايل وشعار الجامع</span>
+                            </h4>
+                            <p class="text-[10px] text-emerald-400">هذه الصورة ستتغير في شاشة الدخول، الهيدر الرئيسي، وكروت الطلاب والتقارير عند الجميع بشكل دائم.</p>
+                            <form onsubmit="adminUpdateMosqueLogo(event)" class="space-y-2">
+                                <input type="file" id="admin-logo-file" accept="image/*" required class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-2 py-1.5 text-xs text-white">
+                                <button type="submit" class="w-full bg-gold hover:bg-gold-dark text-mosque-950 font-bold py-1.5 rounded-lg text-xs">تغيير الشعار وتحديثه للجميع</button>
+                            </form>
+                        </div>
+
+                        <!-- Upload Daily Stories / Highlights -->
+                        <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-5 rounded-2xl border border-gold/20 space-y-3">
+                            <h4 class="font-serif text-sm font-bold text-gold-light border-b border-gold/10 pb-2 flex items-center gap-1">
+                                <i class="fas fa-camera-retro text-gold"></i>
                                 <span>رفع مقتطفات اليوم من الأنشطة (24 ساعة)</span>
                             </h4>
                             <p class="text-[10px] text-emerald-400">ستختفي الصور المرفوعة بعد مرور ٢٤ ساعة على رفعها تلقائياً.</p>
@@ -473,45 +560,14 @@
                                 <button type="submit" class="w-full bg-gold hover:bg-gold-dark text-mosque-950 font-bold py-1.5 rounded-lg text-xs">حفظ ونشر الفعالية</button>
                             </form>
                         </div>
+                    </div>
+                </div>
 
-                        <!-- Add Teacher -->
-                        <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-5 rounded-2xl border border-gold/20 space-y-3">
-                            <h4 class="font-serif text-sm font-bold text-gold-light border-b border-gold/10 pb-2"><i class="fas fa-user-tie"></i> إضافة حساب أستاذ جديد</h4>
-                            <form onsubmit="adminAddTeacher(event)" class="space-y-2">
-                                <input type="text" id="admin-teacher-fullname" placeholder="الاسم الكامل للأستاذ" required class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-3 py-1.5 text-xs text-white">
-                                <input type="text" id="admin-teacher-phone" placeholder="رقم هاتف الأستاذ (واتساب إجباري)" required class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-3 py-1.5 text-xs text-white">
-                                <input type="text" id="admin-teacher-username" placeholder="اسم المستخدم لتسجيل الدخول" required class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-3 py-1.5 text-xs text-white">
-                                <input type="password" id="admin-teacher-password" placeholder="كلمة المرور" required class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-3 py-1.5 text-xs text-white">
-                                <button type="submit" class="w-full bg-gold hover:bg-gold-dark text-mosque-950 font-bold py-1.5 rounded-lg text-xs">إنشاء حساب الأستاذ</button>
-                            </form>
-                        </div>
-
-                        <!-- Add Student Account & Force WhatsApp Code input -->
-                        <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-5 rounded-2xl border border-gold/20 space-y-3">
-                            <h4 class="font-serif text-sm font-bold text-gold-light border-b border-gold/10 pb-2"><i class="fas fa-user-plus"></i> إضافة حساب طالب جديد</h4>
-                            <form onsubmit="adminAddStudent(event)" class="space-y-2">
-                                <input type="text" id="admin-student-fullname" placeholder="الاسم الكامل للطالب" required class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-3 py-1.5 text-xs text-white">
-                                <input type="text" id="admin-student-username" placeholder="اسم المستخدم للطالب" required class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-3 py-1.5 text-xs text-white">
-                                <input type="password" id="admin-student-password" placeholder="كلمة المرور للطالب" required class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-3 py-1.5 text-xs text-white">
-                                
-                                <div class="space-y-1">
-                                    <label class="text-[10px] text-emerald-400 font-bold">رقم واتساب ولي الأمر (إجباري للتقارير):</label>
-                                    <input type="tel" id="admin-student-whatsapp" placeholder="مثال: 963940902808" required class="w-full bg-[#03110d] border border-gold/30 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-gold">
-                                    <p class="text-[9px] text-emerald-600 font-bold">أدخل الرمز الدولي دون أصفار أو علامة + (سوريا تبدأ بـ 963)</p>
-                                </div>
-                                
-                                <div class="space-y-1">
-                                    <label class="text-[10px] text-emerald-400">ربطه بـأستاذ الحلقة:</label>
-                                    <select id="admin-student-teacher-id" class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-3 py-1.5 text-xs text-white" required>
-                                        <!-- Loaded dynamically -->
-                                    </select>
-                                </div>
-                                <button type="submit" class="w-full bg-gold hover:bg-gold-dark text-mosque-950 font-bold py-1.5 rounded-lg text-xs">حفظ الحساب وتوليد الـ QR</button>
-                            </form>
-                        </div>
-
+                <!-- SUB-TAB 5: SYSTEM SCORING & BACKUP DATABASE -->
+                <div id="admin-subtab-settings" class="admin-subtab-content hidden space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Dynamic Configurable System Scoring Values -->
-                        <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-5 rounded-2xl border border-gold/20 space-y-3">
+                        <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-2xl border border-gold/20 space-y-4 shadow-xl">
                             <h4 class="font-serif text-xs font-bold text-gold-light border-b border-gold/10 pb-2"><i class="fas fa-sliders-h"></i> إعدادات النقاط ومكافأة الصفحات</h4>
                             <form onsubmit="adminSaveScoringConfig(event)" class="space-y-2">
                                 <div class="grid grid-cols-2 gap-2 text-xs">
@@ -534,6 +590,26 @@
                                 </div>
                                 <button type="submit" class="w-full bg-gold hover:bg-gold-dark text-mosque-950 font-bold py-1.5 rounded-lg text-xs">حفظ تكوين النقاط</button>
                             </form>
+                        </div>
+
+                        <!-- Admin Action Controls / Database Management -->
+                        <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-2xl border border-gold/20 space-y-4 shadow-xl flex flex-col justify-between">
+                            <div>
+                                <h4 class="font-serif text-xs font-bold text-gold-light border-b border-gold/10 pb-2"><i class="fas fa-database"></i> إدارة المنظومة وقاعدة البيانات</h4>
+                                <p class="text-[10px] text-emerald-400 leading-relaxed mt-2">يمكنك تصدير قاعدة البيانات كـ JSON لحفظ درجات الطلاب والنسخ بأمان، أو طباعة كشف التقرير المباشر كـ PDF.</p>
+                            </div>
+                            <div class="grid grid-cols-1 gap-2 pt-2">
+                                <button onclick="exportJSONBackup()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1">
+                                    <i class="fas fa-download"></i> تصدير النسخة الاحتياطية (JSON)
+                                </button>
+                                <label class="bg-gold hover:bg-gold-dark text-mosque-950 font-bold px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1 cursor-pointer text-center">
+                                    <i class="fas fa-upload"></i> استيراد قاعدة البيانات (JSON)
+                                    <input type="file" id="import-db-input" class="hidden" accept=".json" onchange="importJSONBackup(event)">
+                                </label>
+                                <button onclick="printAdminReports()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1">
+                                    <i class="fas fa-print"></i> طباعة التقارير الورقية (PDF)
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -657,7 +733,7 @@
                 <!-- Outer Beautiful Shield & Logo (No placeholder, exact verbatim reference to 5814283866859048641_5.jpg) -->
                 <div class="bg-[#051a14] border border-gold/30 p-6 rounded-[2rem] shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center gap-6">
                     <div class="w-20 h-20 rounded-full border border-gold/40 p-0.5 overflow-hidden shrink-0">
-                        <img src="5814283866859048641_5.jpg" class="w-full h-full object-cover rounded-full" alt="جامع الكوثر">
+                        <img src="5814283866859048641_5.jpg" class="mosque-logo-img w-full h-full object-cover rounded-full" alt="جامع الكوثر">
                     </div>
                     <div class="text-center md:text-right flex-grow">
                         <h3 class="font-serif text-2xl text-gold-light font-bold">كارت متابعة الأبناء للأهالي</h3>
@@ -873,6 +949,8 @@
             logs: [],
             activities: [],
             stories: [], // Array to hold 24 hour snippet highlights
+            mosqueLogo: null, // Custom Base64 logo uploaded by admin
+            notifications: [], // Local state notifications inbox
             settings: {
                 early: 30,       // Points awarded for early attendance (Before 5:00)
                 regular: 15,     // Points awarded for regular attendance (5:00 - 6:00)
@@ -930,7 +1008,7 @@
 
         // ==================== Local Database Management ====================
         function loadState() {
-            const saved = localStorage.getItem("alkauthar_production_v3_main");
+            const saved = localStorage.getItem("alkauthar_production_v4_main");
             if (saved) {
                 try {
                     state = JSON.parse(saved);
@@ -940,7 +1018,9 @@
                     }
                     if (!state.activities) state.activities = [];
                     if (!state.stories) state.stories = [];
+                    if (!state.notifications) state.notifications = [];
                     if (!state.settings.pointsPerPage) state.settings.pointsPerPage = 5;
+                    if (!state.mosqueLogo) state.mosqueLogo = null;
                 } catch(e) {
                     saveState();
                 }
@@ -948,10 +1028,20 @@
                 saveState();
             }
             filterExpiredStories(); // Filter daily snippets automatically on load
+            updateAllLogos(); // Set initial logos correctly
+            renderNotifications();
         }
 
         function saveState() {
-            localStorage.setItem("alkauthar_production_v3_main", JSON.stringify(state));
+            localStorage.setItem("alkauthar_production_v4_main", JSON.stringify(state));
+        }
+
+        // Updates all elements displaying the mosque logo dynamically
+        function updateAllLogos() {
+            const logoSrc = state.mosqueLogo || "5814283866859048641_5.jpg";
+            document.querySelectorAll(".mosque-logo-img").forEach(img => {
+                img.src = logoSrc;
+            });
         }
 
         // Filter snippets older than 24 hours
@@ -964,6 +1054,152 @@
             if (state.stories.length !== beforeLength) {
                 saveState();
             }
+        }
+
+        // ==================== Web Notifications API Integration ====================
+        function requestNotificationPermission() {
+            if ("Notification" in window) {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        showToast("تم تفعيل الإشعارات الفورية للمتصفح بنجاح!");
+                    } else {
+                        showToast("لم يتم منح الصلاحية لإشعارات المتصفح.", "error");
+                    }
+                });
+            } else {
+                showToast("هذا المتصفح لا يدعم التنبيهات الفورية.", "error");
+            }
+        }
+
+        function triggerNotification(title, body, targetUserId = "all") {
+            // Save inside in-app notifications
+            const newNotif = {
+                id: "notif-" + Date.now() + "-" + Math.random().toString(36).substr(2, 5),
+                title,
+                body,
+                timestamp: Date.now(),
+                read: false,
+                userId: targetUserId
+            };
+
+            state.notifications.unshift(newNotif);
+            saveState();
+            renderNotifications();
+
+            // Native Browser push notification fallback
+            if ("Notification" in window && Notification.permission === "granted") {
+                try {
+                    new Notification(title, {
+                        body: body,
+                        icon: state.mosqueLogo || '5814283866859048641_5.jpg',
+                        dir: 'rtl'
+                    });
+                } catch (e) {
+                    console.log("Browser notification error:", e);
+                }
+            }
+        }
+
+        function toggleNotificationsDrawer(show) {
+            const drawer = document.getElementById("notifications-drawer");
+            if (show) {
+                drawer.classList.remove("hidden");
+                setTimeout(() => drawer.classList.remove("-translate-x-full"), 10);
+                // Mark all notifications for currently logged in user as read
+                if (activeUser) {
+                    state.notifications.forEach(n => {
+                        if (n.userId === "all" || n.userId === activeUser.id) {
+                            n.read = true;
+                        }
+                    });
+                    saveState();
+                    renderNotifications();
+                }
+            } else {
+                drawer.classList.add("-translate-x-full");
+                setTimeout(() => drawer.classList.add("hidden"), 300);
+            }
+        }
+
+        function clearAllNotifications() {
+            if (!activeUser) return;
+            state.notifications = state.notifications.filter(n => n.userId !== "all" && n.userId !== activeUser.id);
+            saveState();
+            renderNotifications();
+            showToast("تم إفراغ صندوق الإشعارات الخاص بك.");
+        }
+
+        function renderNotifications() {
+            const badge = document.getElementById("notifications-badge");
+            const container = document.getElementById("notifications-list-container");
+            container.innerHTML = "";
+
+            if (!activeUser) {
+                badge.classList.add("hidden");
+                return;
+            }
+
+            // Filter notifications meant for this user
+            const userNotifs = state.notifications.filter(n => n.userId === "all" || n.userId === activeUser.id);
+            const unreadCount = userNotifs.filter(n => !n.read).length;
+
+            if (unreadCount > 0) {
+                badge.innerText = unreadCount;
+                badge.classList.remove("hidden");
+            } else {
+                badge.classList.add("hidden");
+            }
+
+            if (userNotifs.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-emerald-500 italic text-xs">
+                        <i class="fas fa-bell-slash text-xl mb-2 block text-gold/40"></i>
+                        صندوق التنبيهات خالٍ حالياً
+                    </div>
+                `;
+                return;
+            }
+
+            userNotifs.forEach(n => {
+                const elapsedMin = Math.round((Date.now() - n.timestamp) / (1000 * 60));
+                let timeStr = elapsedMin === 0 ? "الآن" : `منذ ${elapsedMin} د`;
+                if (elapsedMin >= 60) {
+                    const elapsedHours = Math.round(elapsedMin / 60);
+                    timeStr = `منذ ${elapsedHours} ساعة`;
+                }
+
+                container.innerHTML += `
+                    <div class="p-3 rounded-xl border border-gold/15 ${n.read ? 'bg-mosque-950/45' : 'bg-gold/10 border-gold/40'} space-y-1 text-right transition-all">
+                        <div class="flex justify-between items-start">
+                            <span class="font-bold text-xs text-gold-light">${n.title}</span>
+                            <span class="text-[9px] text-emerald-500">${timeStr}</span>
+                        </div>
+                        <p class="text-[10px] text-white leading-relaxed">${n.body}</p>
+                    </div>
+                `;
+            });
+        }
+
+        // ==================== Admin Mosque Logo Image Update Handler ====================
+        function adminUpdateMosqueLogo(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById("admin-logo-file");
+            if (!fileInput.files || !fileInput.files[0]) {
+                showToast("يرجى تحديد صورة شعار صالحة!", "error");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                state.mosqueLogo = event.target.result;
+                saveState();
+                updateAllLogos();
+                showToast("تم تحديث وحفظ صورة بروفايل وشعار الجامع بنجاح لدى الجميع!");
+                fileInput.value = "";
+                triggerNotification("تحديث شعار المسجد", "قام فضيلة الشيخ محمد عبد الفتاح حجازي بتحديث شعار جامع الكوثر الرسمي.");
+            };
+            reader.readAsDataURL(file);
         }
 
         // ==================== Contact Modal Handlers ====================
@@ -1005,10 +1241,15 @@
             document.getElementById("portal-screen").classList.remove("hidden");
             
             soundEngine.playSuccess();
+            updateAllLogos(); // Ensure loaded dynamically
             initTabs();
             autoFillAbsentsForToday(); // Automatically flag students unscanned today as absent
             renderStoriesHighlights();
             renderActivitiesGrid();
+            renderNotifications();
+
+            // Request permission politely upon successful login
+            setTimeout(requestNotificationPermission, 1500);
         }
 
         function logout() {
@@ -1018,6 +1259,8 @@
             document.getElementById("login-screen").classList.remove("hidden");
             document.getElementById("app-header").classList.add("hidden");
             document.getElementById("portal-screen").classList.add("hidden");
+            updateAllLogos();
+            renderNotifications();
         }
 
         // ==================== QR Login Camera Setup (Back Camera Enforced) ====================
@@ -1154,6 +1397,28 @@
             });
         }
 
+        // ==================== Admin Sub-Tabs Navigation Handler ====================
+        function switchAdminSubTab(subTabId) {
+            // Hide all admin subtab contents
+            document.querySelectorAll(".admin-subtab-content").forEach(el => {
+                el.classList.add("hidden");
+            });
+
+            // Show active subtab content
+            document.getElementById(`admin-subtab-${subTabId}`).classList.remove("hidden");
+
+            // Style buttons accordingly
+            const adminSubtabs = ['overview', 'users', 'credentials', 'activities', 'settings'];
+            adminSubtabs.forEach(id => {
+                const btn = document.getElementById(`adminsub-btn-${id}`);
+                if (id === subTabId) {
+                    btn.className = "flex-grow text-center py-2 px-3 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1.5 bg-gold text-mosque-950 shadow-md shadow-gold/20";
+                } else {
+                    btn.className = "flex-grow text-center py-2 px-3 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1.5 bg-[#03110d] text-emerald-300 hover:bg-mosque-800 border border-gold/10";
+                }
+            });
+        }
+
         // ==================== Managing Custom Toast Alerts & Confirmations ====================
         function showToast(message, type = "success") {
             const toast = document.getElementById("custom-toast");
@@ -1232,7 +1497,7 @@
                 if (log.homework) homeworkText = log.homework;
             }
 
-            // Clean template messaging avoiding empty cards, completely unified
+            // Clean template messaging avoiding empty card previews on WhatsApp
             const msg = `🕌 *تقرير المتابعة اليومي في إدارة الحلقات القرآنية والتربوية في جامع الكوثر* 🕌\n` +
                         `تحت اشراف مدير الحلقات القرآنية والتربوية الشيخ *محمد عبد الفتاح حجازي*\n\n` +
                         `نود إعلامكم بالتقرير التربوي لولدكم الحبيب: *${student.name}*\n` +
@@ -1275,6 +1540,10 @@
                 state.stories.push(newStory);
                 saveState();
                 showToast("تم نشر مقتطف اليوم بنجاح وستستمر في العرض لمدة ٢٤ ساعة!");
+                
+                // Trigger notification for all users
+                triggerNotification("مقتطفات وحكايات اليوم", `شاهد مقتطفات اليوم: ${captionInput.value.trim()}`, "all");
+
                 fileInput.value = "";
                 captionInput.value = "";
                 renderStoriesHighlights();
@@ -1331,8 +1600,8 @@
         }
 
         // ==================== Activities Management ====================
-        function adminAddActivity(e) {
-            e.preventDefault();
+        function adminAddActivity(event) {
+            event.preventDefault();
             const title = document.getElementById("admin-act-title").value.trim();
             const desc = document.getElementById("admin-act-desc").value.trim();
             const date = document.getElementById("admin-act-date").value;
@@ -1347,6 +1616,9 @@
             state.activities.push(newAct);
             saveState();
             showToast("تم نشر الفعالية القرآنية والترفيهية الجديدة بنجاح!");
+
+            // Trigger Activity Notification
+            triggerNotification("رحلات وأنشطة قادمة", `تم الإعلان عن فعاليات جديدة: ${title} المقررة بتاريخ ${date}`, "all");
             
             document.getElementById("admin-act-title").value = "";
             document.getElementById("admin-act-desc").value = "";
@@ -1433,6 +1705,9 @@
             teachers.forEach(t => {
                 teacherSelect.innerHTML += `<option value="${t.id}">${t.displayName}</option>`;
             });
+
+            // Set default sub-tab in Admin dashboard on refresh/load
+            switchAdminSubTab('overview');
 
             renderAdminStudentsTable();
             renderCredentialsTable();
@@ -1906,6 +2181,21 @@
             recalculatePoints(studentId);
             saveState();
             showToast("تم حفظ تقييم الطالب ومزامنة الروزنامة والنقاط الفردية!");
+
+            // Trigger Evaluation notification to parents/student
+            const student = state.students.find(s => s.id === studentId);
+            if (student) {
+                let textDesc = "غائب اليوم ✗";
+                if (att !== "absent") {
+                    textDesc = `التسميع: سورة ${surah || 'مراجعة'} (${pages} صفحة)، الواجب: ${hw || 'مراجعة عامة'}`;
+                }
+                triggerNotification(
+                    "إصدار تقييم اليوم",
+                    `تم إصدار وحفظ تقييم اليوم لولدكم الحبيب ${student.name}. ${textDesc}`,
+                    student.userId
+                );
+            }
+
             renderCalendar();
         }
 
@@ -2033,6 +2323,13 @@
             soundEngine.playBeep();
             
             showToast(`تم مسح البطاقة! الطالب: ${student.name} • الحالة: ${statusLabel}`);
+
+            // Send parent alert notification
+            triggerNotification(
+                "وصول الابن للمسجد",
+                `تم وصول ابنكم بسلام إلى جامع الكوثر وبدء الحلقة في تمام الساعة ${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')} (${statusLabel}).`,
+                student.userId
+            );
             
             if (activeTab === "calendar") {
                 renderCalendar();
@@ -2174,12 +2471,17 @@
                         }
                         if (!state.activities) state.activities = [];
                         if (!state.stories) state.stories = [];
+                        if (!state.notifications) state.notifications = [];
+                        if (!state.mosqueLogo) state.mosqueLogo = null;
+                        
                         saveState();
+                        updateAllLogos(); // Reapply loaded logo if any
                         showToast("تم استيراد قاعدة البيانات الاحتياطية بنجاح واستعادة كافة النقاط والطلاب والأساتذة!");
                         
                         if (activeTab === "admin") renderAdminDashboard();
                         renderStoriesHighlights();
                         renderActivitiesGrid();
+                        renderNotifications();
                     } else {
                         showToast("ملف النسخة الاحتياطية غير متوافق أو تالف!", "error");
                     }
