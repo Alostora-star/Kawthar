@@ -288,7 +288,7 @@ app.post('/api/admin/add-teacher', (req, res) => {
   db.users.push(teacherUser);
 
   if (writeDB(db)) {
-    res.json({ success: true, teacher: teacherUser, message: `تم تسجيل المعلم ${teacherName} بنجاح` });
+    res.json({ success: true, teacher: teacherUser, message: "تم تسجيل المعلم ${teacherName} بنجاح" });
   } else {
     res.status(500).json({ error: 'فشل تسجيل المعلم' });
   }
