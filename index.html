@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منظومة الكوثر لإدارة الحلقات التربوية</title>
+    <title>منظومة الحلقات القرآنية التربوية الصيفية - جامع الكوثر</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts (Tajawal & Amiri) -->
     <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- HTML5 QR Code library for scanning -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     
     <script>
         tailwind.config = {
@@ -17,17 +19,19 @@
                 extend: {
                     colors: {
                         mosque: {
-                            950: '#061c16',
-                            900: '#0b2e25',
-                            800: '#104033',
-                            700: '#175544',
-                            600: '#1f6a56',
+                            950: '#03120E',
+                            900: '#061c16',
+                            800: '#0b2e25',
+                            700: '#104033',
+                            600: '#175544',
+                            500: '#1f6a56',
                             100: '#edfbf7',
                         },
                         gold: {
                             DEFAULT: '#C5A85C',
                             light: '#E6D39D',
                             dark: '#A3843E',
+                            glow: 'rgba(197,168,92,0.15)'
                         }
                     },
                     fontFamily: {
@@ -41,46 +45,43 @@
     <style>
         body {
             font-family: 'Tajawal', sans-serif;
-            background-color: #061c16;
+            background-color: #03120E;
             background-image: radial-gradient(rgba(197, 168, 92, 0.04) 1px, transparent 0);
             background-size: 24px 24px;
         }
-        .tab-transition {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        .glow-gold-hover:hover {
+            box-shadow: 0 0 15px rgba(197, 168, 92, 0.3);
+            border-color: #C5A85C;
         }
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #061c16;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #C5A85C;
-            border-radius: 3px;
-        }
-        @keyframes pulse-gold {
-            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(197, 168, 92, 0.6)); }
-            50% { transform: scale(1.08); filter: drop-shadow(0 0 15px rgba(197, 168, 92, 0.9)); }
-        }
-        .animate-crown {
-            animation: pulse-gold 3s infinite ease-in-out;
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-view {
+                display: block !important;
+                color: black !important;
+            }
         }
     </style>
 </head>
 <body class="text-white min-h-screen flex flex-col justify-between">
 
-    <!-- CUSTOM TOAST NOTIFICATION -->
+    <!-- Alerts & Notifications Overlay -->
     <div id="custom-toast" class="fixed bottom-5 left-5 z-50 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 max-w-sm w-full bg-mosque-900 border-2 border-gold/60 p-4 rounded-xl shadow-2xl flex items-center gap-3">
         <div class="bg-gold text-mosque-950 p-2 rounded-full" id="toast-icon-wrapper">
             <i class="fas fa-info-circle text-base" id="toast-icon"></i>
         </div>
         <div class="flex-grow">
-            <p class="text-xs text-emerald-200 font-bold" id="toast-title">تنبيه المنظومة</p>
+            <p class="text-xs text-emerald-300 font-bold" id="toast-title">تنبيه المنظومة</p>
             <p class="text-xs text-white mt-0.5" id="toast-message">جاري تنفيذ الإجراء...</p>
         </div>
     </div>
 
-    <!-- CUSTOM CONFIRMATION MODAL -->
+    <!-- Confirm Dialog Modal -->
     <div id="custom-confirm" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
         <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-2xl border border-gold/40 shadow-2xl max-w-sm w-full space-y-4 text-center">
             <div class="text-gold text-3xl">
@@ -95,410 +96,824 @@
         </div>
     </div>
 
-    <!-- ========================================================= -->
+    <!-- Printable Logo Card Header for PDF Reports -->
+    <div class="hidden print-view p-6 text-center border-b-2 border-double border-gold/40 max-w-4xl mx-auto text-black">
+        <div class="flex justify-between items-center mb-4">
+            <div class="text-right">
+                <h2 class="font-serif text-xl font-bold">وزارة الأوقاف والشؤون الإسلامية</h2>
+                <h3 class="text-sm">منظومة جامع الكوثر لتعليم القرآن الكريم</h3>
+            </div>
+            <div>
+                <img src="5814283866859048641_2.jpg" class="w-16 h-16 rounded-full border border-gold" alt="شعار جامع الكوثر" onerror="this.src='https://placehold.co/150x150/0b2e25/C5A85C?text=Al-Kauthar'">
+            </div>
+        </div>
+        <h1 class="text-2xl font-serif font-bold text-center mt-2">تقرير تفصيلي للحلقات القرآنية التربوية الصيفية</h1>
+    </div>
+
+    <!-- Main Navigation / Top Header (Visible Only when logged in) -->
+    <header id="app-header" class="hidden no-print bg-mosque-900 border-b border-gold/30 py-4 px-6 shadow-md">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <!-- Mosque Circular Emblem -->
+                <div class="w-14 h-14 rounded-full border-2 border-gold p-0.5 overflow-hidden">
+                    <img src="5814283866859048641_2.jpg" class="w-full h-full object-cover rounded-full" alt="جامع الكوثر" onerror="this.src='https://placehold.co/150x150/0b2e25/C5A85C?text=Al-Kauthar'">
+                </div>
+                <div>
+                    <h2 class="font-serif text-lg md:text-xl font-bold text-gold-light">نظام الحلقات القرآنية التربوية الصيفية</h2>
+                    <span class="text-xs text-emerald-400 font-bold flex items-center gap-1.5 mt-0.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span id="current-user-fullname">فضيلة الشيخ عبد الفتاح حجازي</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Dynamic Portal Navigation Tabs -->
+            <div class="flex items-center gap-2 overflow-x-auto w-full md:w-auto py-1" id="nav-tabs-container">
+                <!-- Tabs generated dynamically inside JS -->
+            </div>
+
+            <!-- Header Action Controls -->
+            <div class="flex items-center gap-3">
+                <button onclick="logout()" class="text-red-400 hover:text-red-300 font-bold text-sm flex items-center gap-1 shrink-0 transition-all">
+                    <i class="fas fa-power-off"></i>
+                    <span>خروج</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
     <!-- 1. LOGIN SCREEN -->
-    <!-- ========================================================= -->
-    <div id="login-screen" class="flex-grow flex items-center justify-center px-4 py-12 relative">
-        <div class="absolute inset-0 opacity-5 pointer-events-none flex justify-center items-center overflow-hidden">
-            <svg class="w-[700px] h-[700px] text-gold" fill="currentColor" viewBox="0 0 100 100">
+    <div id="login-screen" class="flex-grow flex flex-col items-center justify-center px-4 py-8 relative no-print">
+        <div class="absolute inset-0 opacity-10 pointer-events-none flex justify-center items-center overflow-hidden">
+            <svg class="w-[800px] h-[800px] text-gold" fill="currentColor" viewBox="0 0 100 100">
                 <path d="M50 0 L65 35 L100 50 L65 65 L50 100 L35 65 L0 50 L35 35 Z" />
             </svg>
         </div>
 
-        <div class="max-w-md w-full bg-gradient-to-b from-mosque-900 to-mosque-950 p-8 rounded-2xl border border-gold/40 shadow-2xl relative z-10 space-y-6 transform transition-all hover:border-gold duration-500">
-            <div class="text-center space-y-3">
-                <div class="flex justify-center mb-1">
-                    <div class="bg-gradient-to-br from-gold to-gold-dark p-3 rounded-full shadow-lg shadow-gold/20 animate-pulse">
-                        <svg class="w-10 h-10 text-mosque-950" viewBox="0 0 64 64" fill="currentColor">
-                            <path d="M32 2 L26 12 L28 12 L28 20 L24 24 L24 30 L28 32 L28 62 L36 62 L36 32 L40 30 L40 24 L36 20 L36 12 L38 12 Z M32 6 L34 10 L30 10 Z"/>
-                        </svg>
+        <!-- Custom Card matching 5814283866859048643_2.jpg layout and color theme -->
+        <div class="max-w-md w-full bg-[#051a14] border-2 border-gold/40 p-8 rounded-[2rem] shadow-2xl relative z-10 space-y-6">
+            <div class="text-center space-y-2">
+                <!-- Large Mosque circular logo -->
+                <div class="flex justify-center mb-2">
+                    <div class="w-36 h-36 rounded-full border-4 border-gold/80 p-1 bg-mosque-950 overflow-hidden shadow-xl">
+                        <img src="5814283866859048641_2.jpg" class="w-full h-full object-cover rounded-full" alt="شعار جامع الكوثر" onerror="this.src='https://placehold.co/150x150/0b2e25/C5A85C?text=Al-Kauthar'">
                     </div>
                 </div>
-                <h2 class="font-serif text-2xl lg:text-3xl text-gold-light font-bold">جامع الكوثر</h2>
+                <h2 class="font-serif text-3xl text-gold-light font-bold">جامع الكوثر</h2>
                 <p class="text-[11px] text-emerald-400 font-bold tracking-widest uppercase">الجمهورية العربية السورية - وزارة الأوقاف</p>
                 <div class="h-[1px] bg-gradient-to-r from-transparent via-gold/40 to-transparent w-4/5 mx-auto"></div>
-                <p class="text-lg font-serif text-white font-bold mt-2">نظام إدارة الحلقات التربوية الصيفية</p>
+                <p class="text-sm font-serif text-white/90">نظام الحلقات القرآنية التربوية الصيفية</p>
+            </div>
+
+            <!-- Time Widget Card in center of Login (as in 5814283866859048643_2.jpg) -->
+            <div class="bg-mosque-950/80 border border-gold/20 p-4 rounded-xl text-center space-y-1 shadow-inner">
+                <p class="text-xs text-emerald-400 font-bold" id="login-arabic-date">--</p>
+                <p class="text-lg font-bold font-mono text-gold-light" id="login-live-clock">00:00:00 م</p>
             </div>
 
             <form onsubmit="handleLogin(event)" class="space-y-4">
-                <div class="space-y-2">
-                    <label class="text-xs text-emerald-400 font-bold block">اسم المستخدم أو رقم الهاتف</label>
+                <div class="space-y-1 text-right">
+                    <label class="text-xs text-emerald-400 font-bold block pr-1">اسم المستخدم أو رقم الهاتف</label>
                     <div class="relative">
-                        <input type="text" id="login-identifier" required placeholder="اسم المستخدم أو الهاتف" class="w-full bg-mosque-950 border border-gold/30 rounded-lg py-3 px-4 pl-10 text-white focus:outline-none focus:border-gold placeholder-emerald-800 text-sm transition-all focus:ring-1 focus:ring-gold">
-                        <i class="fas fa-user absolute left-3 top-4 text-gold/60"></i>
+                        <input type="text" id="login-identifier" required placeholder="اسم المستخدم..." class="w-full bg-[#03110d] border border-gold/20 rounded-xl py-3 px-4 pr-10 text-white focus:outline-none focus:border-gold placeholder-emerald-900 text-sm transition-all text-right">
+                        <i class="fas fa-user absolute right-3.5 top-4 text-gold/60"></i>
                     </div>
                 </div>
 
-                <div class="space-y-2">
-                    <label class="text-xs text-emerald-400 font-bold block">كلمة المرور</label>
+                <div class="space-y-1 text-right">
+                    <label class="text-xs text-emerald-400 font-bold block pr-1">كلمة المرور</label>
                     <div class="relative">
-                        <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-mosque-950 border border-gold/30 rounded-lg py-3 px-4 pl-10 text-white focus:outline-none focus:border-gold placeholder-emerald-800 text-sm transition-all focus:ring-1 focus:ring-gold">
-                        <i class="fas fa-lock absolute left-3 top-4 text-gold/60"></i>
+                        <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-[#03110d] border border-gold/20 rounded-xl py-3 px-4 pr-10 text-white focus:outline-none focus:border-gold placeholder-emerald-900 text-sm transition-all text-right">
+                        <i class="fas fa-lock absolute right-3.5 top-4 text-gold/60"></i>
                     </div>
                 </div>
 
-                <div id="login-error" class="hidden bg-red-950/60 border border-red-500/40 text-red-200 p-3 rounded-lg text-xs text-center font-bold animate-bounce">
-                    فشل تسجيل الدخول. يرجى التحقق من المدخلات.
+                <div id="login-error" class="hidden bg-red-950/60 border border-red-500/40 text-red-200 p-3 rounded-xl text-xs text-center font-bold">
+                    فشل تسجيل الدخول. يرجى التحقق من اسم المستخدم وكلمة المرور.
                 </div>
 
-                <button type="submit" class="w-full bg-gradient-to-r from-gold to-gold-dark text-mosque-950 font-bold py-3.5 rounded-lg shadow-lg hover:brightness-110 transition-all duration-300 flex items-center justify-center gap-2 transform active:scale-95">
+                <!-- Styled Login Button -->
+                <button type="submit" class="w-full bg-gradient-to-r from-gold to-gold-dark text-mosque-950 font-bold py-3.5 rounded-xl shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-2">
                     <i class="fas fa-sign-in-alt"></i>
                     <span>تسجيل الدخول للمنظومة</span>
                 </button>
             </form>
 
+            <!-- QR Code Direct Login Section (No typing needed) -->
+            <div class="pt-3 border-t border-gold/10 text-center space-y-2">
+                <p class="text-xs text-emerald-400 font-bold">أو تسجيل الدخول السريع عبر بطاقة الـ QR</p>
+                <div id="qr-reader-login-container" class="hidden mx-auto max-w-xs bg-black rounded-lg overflow-hidden border border-gold/30 p-2">
+                    <div id="qr-reader-login"></div>
+                    <button onclick="stopQRLoginScanner()" class="mt-2 text-[10px] bg-red-900 text-white px-2 py-1 rounded">إغلاق الكاميرا</button>
+                </div>
+                <button id="btn-start-qr-login" onclick="startQRLoginScanner()" class="w-full bg-emerald-800 hover:bg-emerald-700 text-gold-light font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-1.5">
+                    <i class="fas fa-qrcode"></i>
+                    <span>مسح كود بطاقة الطالب للدخول السريع</span>
+                </button>
+            </div>
 
+            <div class="text-center pt-2 border-t border-gold/10">
+                <p class="text-[10px] text-emerald-600/90 font-bold">
+                    الحساب الإداري الافتراضي لجامع الكوثر:<br>
+                    اسم المستخدم: <span class="text-gold-light">admin</span> | كلمة المرور: <span class="text-gold-light">admin123</span>
+                </p>
+            </div>
         </div>
     </div>
 
-    <!-- ========================================================= -->
-    <!-- 2. MAIN LOGGED-IN PORTAL -->
-    <!-- ========================================================= -->
-    <div id="portal-screen" class="hidden flex-grow flex flex-col tab-transition">
-        <!-- Dashboard Top Header Bar -->
-        <header class="bg-mosque-900 border-b border-gold/30 py-4 px-6 shadow-md">
-            <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div class="flex items-center gap-3">
-                    <i class="fas fa-mosque text-gold text-2xl animate-pulse"></i>
-                    <div>
-                        <h2 class="font-serif text-xl font-bold text-gold-light">منظومة جامع الكوثر التربوية</h2>
-                        <span id="portal-user-badge" class="text-xs text-emerald-400 font-bold flex items-center gap-1.5">
-                            <i class="fas fa-circle text-[8px] text-emerald-500 animate-ping"></i>
-                            <span>مرحباً بك</span>
-                        </span>
+    <!-- MAIN WORKSPACE -->
+    <div id="portal-screen" class="hidden flex-grow flex flex-col no-print">
+        <main class="max-w-7xl w-full mx-auto px-4 py-6 flex-grow space-y-6">
+
+            <!-- ================= TAB: MANAGER / ADMIN DASHBOARD ================= -->
+            <section id="tab-admin" class="hidden space-y-6">
+                <!-- Upper Summary Stats Card Grid -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-[#051a14] p-5 rounded-2xl border border-gold/20 shadow-lg text-center">
+                        <i class="fas fa-user-graduate text-gold text-2xl mb-2"></i>
+                        <p class="text-2xl font-black text-white" id="stat-total-students">0</p>
+                        <p class="text-[11px] text-emerald-400 font-bold mt-1">إجمالي الطلاب</p>
+                    </div>
+                    <div class="bg-[#051a14] p-5 rounded-2xl border border-gold/20 shadow-lg text-center">
+                        <i class="fas fa-chalkboard-teacher text-gold text-2xl mb-2"></i>
+                        <p class="text-2xl font-black text-white" id="stat-total-teachers">0</p>
+                        <p class="text-[11px] text-emerald-400 font-bold mt-1">إجمالي الأساتذة</p>
+                    </div>
+                    <div class="bg-[#051a14] p-5 rounded-2xl border border-gold/20 shadow-lg text-center">
+                        <i class="fas fa-star text-gold text-2xl mb-2"></i>
+                        <p class="text-2xl font-black text-white" id="stat-total-points">0</p>
+                        <p class="text-[11px] text-emerald-400 font-bold mt-1">إجمالي نقاط الطلاب</p>
+                    </div>
+                    <div class="bg-[#051a14] p-5 rounded-2xl border border-gold/20 shadow-lg text-center">
+                        <i class="fas fa-clock text-gold text-2xl mb-2"></i>
+                        <p class="text-lg font-black text-white" id="stat-active-day">اليوم</p>
+                        <p class="text-[11px] text-emerald-400 font-bold mt-1">حالة الروزنامة الحالية</p>
                     </div>
                 </div>
 
-                <div class="flex items-center gap-2 overflow-x-auto w-full sm:w-auto" id="nav-tabs-container">
-                    <!-- Loaded dynamically -->
+                <!-- Admin Action Controls / Database Management -->
+                <div class="bg-mosque-900 border border-gold/20 rounded-2xl p-4 flex flex-wrap gap-4 items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="text-gold font-bold text-sm"><i class="fas fa-database"></i> إدارة المنظومة وقاعدة البيانات:</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="exportJSONBackup()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1">
+                            <i class="fas fa-download"></i> تصدير النسخة الاحتياطية (JSON)
+                        </button>
+                        <label class="bg-gold hover:bg-gold-dark text-mosque-950 font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1 cursor-pointer">
+                            <i class="fas fa-upload"></i> استيراد قاعدة البيانات (JSON)
+                            <input type="file" id="import-db-input" class="hidden" accept=".json" onchange="importJSONBackup(event)">
+                        </label>
+                        <button onclick="printAdminReports()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1">
+                            <i class="fas fa-print"></i> طباعة التقارير الورقية لجامع الكوثر (PDF)
+                        </button>
+                    </div>
                 </div>
 
-                <button onclick="logout()" class="text-red-400 hover:text-red-300 font-bold text-sm flex items-center gap-1 shrink-0 transition-transform active:scale-90">
-                    <i class="fas fa-power-off"></i>
-                    <span>تسجيل الخروج</span>
-                </button>
-            </div>
-        </header>
-
-        <!-- Main Workspace Area -->
-        <main class="max-w-6xl w-full mx-auto px-4 py-8 flex-grow">
-
-            <!-- ================= TAB: LEADERBOARD ================= -->
-            <section id="tab-leaderboard" class="hidden space-y-8">
-                <div class="text-center space-y-2">
-                    <h3 class="font-serif text-2xl text-gold-light font-bold flex items-center justify-center gap-2">
-                        <i class="fas fa-trophy text-gold animate-bounce"></i>
-                        <span>لوحة الشرف للدورة الصيفية</span>
-                    </h3>
-                    <p class="text-xs text-emerald-300">ترتيب الطلاب المتصدرين ونقاط تفوقهم التراكمية</p>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div class="lg:col-span-2 bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-xl border border-gold/20 shadow-xl space-y-4">
-                        <div class="flex justify-between items-center">
-                            <h4 class="font-bold text-gold-light text-sm"><i class="fas fa-star"></i> الترتيب العام لجميع الطلاب</h4>
-                            <input type="text" id="lead-search" onkeyup="renderLeaderboard()" placeholder="بحث سريع..." class="bg-mosque-950 border border-gold/20 rounded py-1.5 px-3 text-xs text-white focus:outline-none focus:border-gold placeholder-emerald-850">
+                <!-- Leaderboard & Management Panels -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Left: Leaderboard & Attendance Table -->
+                    <div class="lg:col-span-2 bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-2xl border border-gold/20 shadow-xl space-y-4">
+                        <div class="flex justify-between items-center border-b border-gold/10 pb-3">
+                            <h4 class="font-serif text-lg font-bold text-gold-light"><i class="fas fa-trophy text-gold"></i> جدول صدارة الطلاب في الحلقات</h4>
+                            <input type="text" id="admin-student-search" onkeyup="renderAdminStudentsTable()" placeholder="بحث سريع عن طالب..." class="bg-[#03110d] border border-gold/20 rounded-lg py-1 px-3 text-xs text-white focus:outline-none focus:border-gold">
                         </div>
-                        <div class="overflow-x-auto rounded-lg border border-gold/10">
-                            <table class="w-full text-right text-xs">
+                        <div id="admin-empty-students-warning" class="hidden text-center py-8 text-xs text-amber-500">
+                            <i class="fas fa-exclamation-circle text-2xl mb-1 block"></i> لا يوجد طلاب مسجلون حالياً. ابدأ بإضافة أساتذة ثم طلاب من القائمة الجانبية.
+                        </div>
+                        <div class="overflow-x-auto rounded-xl">
+                            <table class="w-full text-right text-xs" id="admin-students-table">
                                 <thead class="bg-mosque-950 text-gold-light border-b border-gold/20">
                                     <tr>
-                                        <th class="p-3 text-center">الترتيب</th>
                                         <th class="p-3">اسم الطالب</th>
-                                        <th class="p-3">الحلقة</th>
-                                        <th class="p-3 text-center">النقاط</th>
+                                        <th class="p-3">الأستاذ (الحلقة)</th>
+                                        <th class="p-3 text-center">حضور اليوم</th>
+                                        <th class="p-3 text-center">مجموع النقاط</th>
+                                        <th class="p-3 text-center">رقم الأهل للواتساب</th>
+                                        <th class="p-3 text-center">الإجراءات والبطاقة</th>
                                     </tr>
                                 </thead>
-                                <tbody id="lead-table-body" class="divide-y divide-emerald-950/20">
-                                    <!-- Dynamic -->
+                                <tbody id="admin-dashboard-students-body" class="divide-y divide-emerald-950/20">
+                                    <!-- Loaded dynamically -->
                                 </tbody>
                             </table>
                         </div>
                     </div>
 
+                    <!-- Right: Quick Creator Tools & Settings -->
                     <div class="space-y-6">
-                        <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-xl border border-gold/20 space-y-3 shadow-lg">
-                            <h4 class="font-bold text-gold-light text-sm"><i class="fas fa-layer-group"></i> تنافس الحلقات</h4>
-                            <div class="space-y-3" id="ring-averages-container">
-                                <!-- Dynamic -->
-                            </div>
+                        <!-- Quick Add Teacher Account (teacher IS the circle itself) -->
+                        <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-5 rounded-2xl border border-gold/20 space-y-3">
+                            <h4 class="font-serif text-sm font-bold text-gold-light border-b border-gold/10 pb-2"><i class="fas fa-user-tie"></i> إضافة حساب أستاذ جديد (حلقة)</h4>
+                            <p class="text-[10px] text-emerald-400">ملاحظة: الأستاذ نفسه يمثل حلقة مخصصة له، ويقوم برصد نقاط وحضور طلابه.</p>
+                            <form onsubmit="adminAddTeacher(event)" class="space-y-2">
+                                <input type="text" id="admin-teacher-fullname" placeholder="الاسم الكامل للأستاذ" required class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-3 py-1.5 text-xs text-white">
+                                <input type="text" id="admin-teacher-username" placeholder="اسم المستخدم لتسجيل الدخول" required class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-3 py-1.5 text-xs text-white">
+                                <input type="password" id="admin-teacher-password" placeholder="كلمة المرور" required class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-3 py-1.5 text-xs text-white">
+                                <button type="submit" class="w-full bg-gold hover:bg-gold-dark text-mosque-950 font-bold py-1.5 rounded-lg text-xs">إنشاء حساب الأستاذ</button>
+                            </form>
+                        </div>
+
+                        <!-- Quick Add Student Account -->
+                        <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-5 rounded-2xl border border-gold/20 space-y-3">
+                            <h4 class="font-serif text-sm font-bold text-gold-light border-b border-gold/10 pb-2"><i class="fas fa-user-plus"></i> إضافة حساب طالب جديد</h4>
+                            <form onsubmit="adminAddStudent(event)" class="space-y-2">
+                                <input type="text" id="admin-student-fullname" placeholder="الاسم الكامل للطالب" required class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-3 py-1.5 text-xs text-white">
+                                <input type="text" id="admin-student-username" placeholder="اسم المستخدم للطالب" required class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-3 py-1.5 text-xs text-white">
+                                <input type="password" id="admin-student-password" placeholder="كلمة المرور للطالب" required class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-3 py-1.5 text-xs text-white">
+                                
+                                <!-- Mandatory WhatsApp Phone Number Field -->
+                                <div class="space-y-1">
+                                    <label class="text-[10px] text-emerald-400 font-bold">رقم واتساب ولي الأمر (إجباري):</label>
+                                    <input type="tel" id="admin-student-whatsapp" placeholder="مثال: 963955123456" required class="w-full bg-[#03110d] border border-gold/30 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-gold">
+                                    <p class="text-[9px] text-emerald-600">أدخل الرمز الدولي دون أصفار أو علامة + (مثال سوريا: 963)</p>
+                                </div>
+                                
+                                <div class="space-y-1">
+                                    <label class="text-[10px] text-emerald-400">ربطه بـأستاذ الحلقة:</label>
+                                    <select id="admin-student-teacher-id" class="w-full bg-[#03110d] border border-gold/20 rounded-lg px-3 py-1.5 text-xs text-white" required>
+                                        <!-- Loaded dynamically -->
+                                    </select>
+                                </div>
+                                <button type="submit" class="w-full bg-gold hover:bg-gold-dark text-mosque-950 font-bold py-1.5 rounded-lg text-xs">حفظ الحساب وتوليد الـ QR</button>
+                            </form>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- ================= TAB: STUDENT ================= -->
-            <section id="tab-student" class="hidden space-y-6">
-                <!-- Student Card Header - مثل الصورة -->
-                <div class="bg-gradient-to-br from-mosque-900 via-mosque-800 to-mosque-950 p-8 rounded-2xl border border-gold/30 shadow-2xl relative overflow-hidden">
-                    <div class="absolute top-0 right-0 w-40 h-40 bg-gold/5 rounded-full blur-3xl"></div>
-                    <div class="relative z-10">
-                        <h3 class="font-serif text-4xl font-bold text-gold-light mb-1" id="student-welcome-name">أهلاً</h3>
-                        <p class="text-emerald-300 text-sm mb-4" id="student-ring-info">الحلقة: --</p>
-                        <p class="text-gold-light italic text-xs mb-6" id="student-motivational-quote">"إن الذي ليس في جوفه شيء من القرآن كالبيت الخرب"</p>
+            <!-- ================= TAB: CALENDAR & ATTENDANCE ================= -->
+            <section id="tab-calendar" class="hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Right: Calendar Controls & Day View -->
+                    <div class="lg:col-span-2 bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-2xl border border-gold/20 shadow-xl space-y-4">
+                        <div class="flex justify-between items-center border-b border-gold/10 pb-3">
+                            <h4 class="font-serif text-lg font-bold text-gold-light" id="calendar-title-heading"><i class="fas fa-calendar-alt text-gold"></i> روزنامة تفاعل وحضور الطلاب</h4>
+                            <div class="flex items-center gap-1.5">
+                                <!-- Calendar Compact Size Toggle -->
+                                <button id="btn-toggle-calendar" onclick="toggleCalendarSize()" class="bg-gold/10 text-gold-light hover:bg-gold hover:text-mosque-950 px-3 py-1 rounded-lg text-xs font-bold transition-all">
+                                    <i class="fas fa-expand-alt"></i> تكبير الروزنامة
+                                </button>
+                                <div class="flex items-center gap-1" id="calendar-navigation-controls">
+                                    <button onclick="navigateMonth(-1)" class="bg-mosque-800 hover:bg-mosque-700 text-gold-light px-2 py-1 rounded-lg text-xs"><i class="fas fa-chevron-right"></i></button>
+                                    <span class="text-xs font-bold px-2 text-white" id="calendar-month-year-label">--</span>
+                                    <button onclick="navigateMonth(1)" class="bg-mosque-800 hover:bg-mosque-700 text-gold-light px-2 py-1 rounded-lg text-xs"><i class="fas fa-chevron-left"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Calendar days wrapper with height transition toggles -->
+                        <div id="calendar-expandable-container" class="transition-all duration-300 overflow-hidden" style="max-height: 180px;">
+                            <div class="grid grid-cols-7 gap-1 text-center text-xs font-bold text-emerald-300 mb-1" id="calendar-days-header">
+                                <div>أحد</div><div>اثنين</div><div>ثلاثاء</div><div>أربعاء</div><div>خميس</div><div>جمعة</div><div>سبت</div>
+                            </div>
+                            <div class="grid grid-cols-7 gap-1" id="calendar-days-grid">
+                                <!-- Populated in JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Left: Interactive Log Editor for Selected Date -->
+                    <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-2xl border border-gold/20 shadow-xl space-y-4">
+                        <div class="border-b border-gold/10 pb-2 flex justify-between items-center">
+                            <h4 class="font-serif text-sm font-bold text-gold-light" id="log-editor-date-title">تقييم الطلاب ليوم: --</h4>
+                            <span class="text-[10px] bg-gold/10 text-gold-light px-2 py-0.5 rounded-lg font-bold" id="log-editor-role-warning">لوحة الأستاذ</span>
+                        </div>
                         
-                        <div class="flex items-center gap-4">
-                            <div class="bg-gradient-to-br from-gold to-gold-dark p-6 rounded-xl shadow-lg text-center min-w-40">
-                                <p class="text-5xl font-black text-mosque-950" id="student-total-points">0</p>
-                                <p class="text-xs text-mosque-900 font-bold mt-2 uppercase tracking-widest">إجمالي النقاط</p>
+                        <div id="log-editor-panel-contents" class="space-y-3 max-h-[450px] overflow-y-auto pr-1">
+                            <!-- Populated with list of ring students and input logs for selected date -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= TAB: QR SCANNER SYSTEM ================= -->
+            <section id="tab-qr" class="hidden space-y-6">
+                <div class="text-center space-y-2 max-w-xl mx-auto">
+                    <h3 class="font-serif text-2xl text-gold-light font-bold flex items-center justify-center gap-2">
+                        <i class="fas fa-qrcode text-gold"></i>
+                        <span>ماسح الحضور التلقائي بالـ QR وساعة الموقع الفعلي</span>
+                    </h3>
+                    <p class="text-xs text-emerald-300">
+                        قم بتوجيه كاميرا جهازك نحو بطاقة الـ QR الخاصة بالطالب لتسجيل حضوره فوراً في الروزنامة، وستقوم المنظومة تلقائياً بمقارنة وقت وتاريخ الفحص الفعلي واحتساب النقاط.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                    <!-- Scanner View & Active Camera Frame -->
+                    <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-2xl border border-gold/30 shadow-2xl relative overflow-hidden flex flex-col justify-between space-y-4">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-gold/5 rounded-full blur-2xl"></div>
+                        
+                        <div class="space-y-4 text-center">
+                            <span class="text-[10px] bg-emerald-950 text-emerald-400 font-bold border border-emerald-500/20 px-3 py-1 rounded-full uppercase">كاميرا الفحص الحقيقية</span>
+                            
+                            <!-- Scanner Target Box or Interactive HTML5 Camera Panel -->
+                            <div class="relative w-full max-w-xs mx-auto aspect-square bg-mosque-950 border-2 border-dashed border-gold/40 rounded-2xl flex flex-col items-center justify-center p-2">
+                                <div id="admin-qr-reader" class="w-full h-full rounded-xl overflow-hidden bg-black"></div>
+                            </div>
+
+                            <div class="flex justify-center gap-2">
+                                <button onclick="startAdminQRScanner()" class="bg-gold hover:bg-gold-dark text-mosque-950 font-bold px-4 py-2 rounded-lg text-xs flex items-center gap-1">
+                                    <i class="fas fa-play"></i> تشغيل الكاميرا
+                                </button>
+                                <button onclick="stopAdminQRScanner()" class="bg-red-900 hover:bg-red-800 text-white font-bold px-4 py-2 rounded-lg text-xs flex items-center gap-1">
+                                    <i class="fas fa-stop"></i> إيقاف الكاميرا
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Simulated Quick Scan & Override Testing Injector -->
+                    <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-2xl border border-gold/20 shadow-xl space-y-4">
+                        <h4 class="font-serif text-sm font-bold text-gold-light border-b border-gold/10 pb-2 flex items-center gap-1.5">
+                            <i class="fas fa-magic"></i>
+                            <span>محاكاة مسح الكود (للاختبار وتجاوز وقت الخادم)</span>
+                        </h4>
+                        <p class="text-[11px] text-emerald-400">
+                            يمكنك استخدام هذا النموذج لمحاكاة تمرير البطاقة في أوقات افتراضية مختلفة للتأكد من آلية منح النقاط التلقائية في الروزنامة.
+                        </p>
+                        
+                        <div class="space-y-3 pt-2">
+                            <div>
+                                <label class="text-xs text-emerald-400 block mb-1">اختر الطالب المراد تسجيله:</label>
+                                <select id="qr-sim-student-id" class="w-full bg-[#03110d] border border-gold/20 rounded-lg p-2.5 text-xs text-white focus:outline-none">
+                                    <!-- Dynamic Students list -->
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs text-emerald-400 block mb-1">تحديد ساعة المحاكاة الافتراضية:</label>
+                                <select id="qr-sim-time-slot" class="w-full bg-[#03110d] border border-gold/20 rounded-lg p-2.5 text-xs text-white focus:outline-none">
+                                    <option value="16:30">الساعة 04:30 مساءً (قبل 5:00 -> حضور باكر 30+ ن)</option>
+                                    <option value="17:15">الساعة 05:15 مساءً (بين 5 و 6 -> حضور عادي 15+ ن)</option>
+                                    <option value="18:30">الساعة 06:30 مساءً (بعد 6:00 -> حضور متأخر 5+ ن)</option>
+                                </select>
+                            </div>
+                            <button onclick="simulateQRScan()" class="w-full bg-gold hover:bg-gold-dark text-mosque-950 font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-lg">
+                                <i class="fas fa-barcode"></i>
+                                <span>تأكيد الحضور الذكي بالـ QR</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= TAB: INDIVIDUAL STUDENT PANEL ================= -->
+            <section id="tab-student" class="hidden space-y-6">
+                <!-- Top Status Banner showing current Date & Live Islamic Clock -->
+                <div class="bg-gradient-to-b from-mosque-900 via-mosque-950 to-mosque-900 border border-gold/20 p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-lg">
+                    <div class="text-center md:text-right space-y-1">
+                        <h3 class="font-serif text-2xl text-gold-light font-bold">بوابة الطالب وأولياء الأمور</h3>
+                        <p class="text-xs text-emerald-400 font-bold">المتابعة المباشرة لبطاقة الطالب والالتزام التام بجدول اللقاء</p>
+                    </div>
+
+                    <!-- Live Ticking Clock (Matches Photo 5814283866859048643_2.jpg style) -->
+                    <div class="bg-mosque-950/80 border border-gold/30 px-5 py-2.5 rounded-xl shadow-inner text-center md:text-left min-w-[200px]">
+                        <p class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider mb-1" id="std-board-islamic-date">--</p>
+                        <p class="text-xl font-bold font-mono text-gold-light" id="std-board-live-clock">00:00:00 م</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Replicating Photo 5814283866859048642.jpg EXACT CARD DESIGN -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <!-- Head title for Parent Card -->
+                        <div class="bg-[#051a14] border border-gold/30 p-6 rounded-[1.5rem] shadow-2xl relative overflow-hidden space-y-4">
+                            <div class="text-center pb-2 border-b border-gold/10">
+                                <h3 class="font-serif text-2xl text-gold-light font-bold">كارت متابعة الأبناء للأهالي</h3>
+                                <p class="text-xs text-emerald-400 font-medium">تقارير الحفظ والتسميع والسلوك المباشرة لأبنائكم</p>
+                            </div>
+
+                            <div class="flex items-center justify-between gap-6 py-4">
+                                <!-- Big Points Display Box -->
+                                <div class="bg-mosque-950 border border-gold/30 px-6 py-4 rounded-xl text-center min-w-[120px]">
+                                    <p class="text-4xl font-black text-gold" id="parent-card-points">0</p>
+                                    <p class="text-[10px] text-emerald-400 font-bold mt-1">إجمالي النقاط</p>
+                                </div>
+
+                                <!-- Student Name and Ring details -->
+                                <div class="text-right space-y-1">
+                                    <h4 class="text-3xl font-bold text-white font-serif" id="parent-card-student-name">--</h4>
+                                    <p class="text-xs text-gold-light font-medium" id="parent-card-ring-name">الأستاذ المشرف: --</p>
+                                </div>
+                            </div>
+
+                            <!-- Evaluation Section -->
+                            <div class="bg-mosque-950/60 p-4 rounded-xl border border-gold/10 space-y-4">
+                                <h5 class="text-xs font-bold text-gold-light flex items-center gap-1.5 border-b border-gold/10 pb-2">
+                                    <i class="fas fa-bookmark text-gold"></i>
+                                    <span>السجل والتقييم الأخير:</span>
+                                </h5>
+
+                                <div class="grid grid-cols-2 gap-4 text-xs">
+                                    <div>
+                                        <p class="text-[10px] text-emerald-400 font-bold">حضور اليوم: 🌿</p>
+                                        <p class="text-white font-bold mt-1" id="parent-card-attendance">--</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] text-emerald-400 font-bold">السورة المحفوظة:</p>
+                                        <p class="text-white font-bold mt-1" id="parent-card-surah">--</p>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4 text-xs">
+                                    <div>
+                                        <p class="text-[10px] text-emerald-400 font-bold">الصفحات المقروءة:</p>
+                                        <p class="text-white font-bold mt-1" id="parent-card-pages">--</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] text-emerald-400 font-bold">النقاط الإضافية لليوم:</p>
+                                        <p class="text-gold mt-1 font-bold" id="parent-card-extra-points">0 ن</p>
+                                    </div>
+                                </div>
+
+                                <div class="pt-2 border-t border-emerald-950/40 text-xs">
+                                    <p class="text-[10px] text-gold-light font-bold">الواجب القادم المطلوب:</p>
+                                    <p class="text-white font-bold mt-1" id="parent-card-homework">--</p>
+                                </div>
+
+                                <div class="pt-2 border-t border-emerald-950/40 text-xs">
+                                    <p class="text-[10px] text-gold-light font-bold">📝 ملاحظات أستاذ الحلقة:</p>
+                                    <p class="text-emerald-300 italic mt-1" id="parent-card-notes">"لا يوجد ملاحظات حتى الآن"</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Personal QR Code & Concentrated Daily Schedule (Strictly following requested hours) -->
+                    <div class="space-y-6">
+                        <!-- Student Membership Card & QR Code (Students use this to log in or show to teacher) -->
+                        <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-2xl border border-gold/30 shadow-xl text-center space-y-4">
+                            <h4 class="font-serif text-sm font-bold text-gold-light"><i class="fas fa-qrcode"></i> بطاقة الـ QR الخاصة بالدخول الفوري والتحضير</h4>
+                            <p class="text-[10px] text-emerald-300">قم بحفظ هذه البطاقة على هاتفك لتسجيل الحضور والدخول السريع فوراً عند بوابة المسجد.</p>
+                            
+                            <div class="bg-white p-3 rounded-xl shadow-lg inline-block border-2 border-gold mx-auto" id="qrcode-container-render">
+                                <!-- Target for QR generator -->
+                                <div id="student-personal-qr-element" class="w-32 h-32 flex items-center justify-center bg-gray-100">
+                                    <i class="fas fa-sync-alt animate-spin text-gray-400"></i>
+                                </div>
+                            </div>
+                            
+                            <p class="text-xs text-white font-bold" id="student-personal-token">رمز الدخول: --</p>
+                        </div>
+
+                        <!-- Static Concentrated Daily Schedule (35096.jpg Style - Uneditable to keep focus) -->
+                        <div class="bg-[#051a14] p-5 rounded-2xl border border-gold/20 space-y-3">
+                            <h4 class="font-serif text-xs font-bold text-gold-light border-b border-gold/10 pb-2 flex items-center justify-between">
+                                <span>📅 جدول حصص اللقاء اليومي الفعلي</span>
+                                <span class="text-[9px] bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded-lg border border-emerald-500/20 font-bold">ثابت للتركيز</span>
+                            </h4>
+                            <div class="space-y-2 text-xs">
+                                <div class="bg-mosque-950/60 p-2.5 rounded-lg border border-gold/5 flex justify-between">
+                                    <span>الحصة الأولى: ذكر جماعي ودرس</span>
+                                    <span class="text-emerald-400 font-bold">05:00 م - 05:30 م</span>
+                                </div>
+                                <div class="bg-mosque-950/60 p-2.5 rounded-lg border border-gold/5 flex justify-between">
+                                    <span>الحصة الثانية: تسميع قرآن</span>
+                                    <span class="text-gold-light font-bold">05:30 م - 07:00 م</span>
+                                </div>
+                                <div class="bg-mosque-950/60 p-2.5 rounded-lg border border-gold/5 flex justify-between">
+                                    <span>الحصة الثالثة: أنشودة أو درس صغير</span>
+                                    <span class="text-emerald-400 font-bold">07:00 م - 07:15 م</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Statistics Grid - مثل الصورة -->
-                <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-8 rounded-2xl border border-gold/20 shadow-xl space-y-6">
-                    <h4 class="font-bold text-gold-light text-lg flex items-center gap-2">📊 السجل والتقييم الأخير:</h4>
-                    
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        <!-- حضور اليوم -->
-                        <div class="bg-mosque-950 p-4 rounded-lg border border-gold/10 text-center">
-                            <p class="text-xs text-emerald-400 font-bold mb-2">حضور اليوم:</p>
-                            <p class="text-lg font-bold text-gold-light" id="student-attendance-today">--</p>
-                            <p class="text-xs text-emerald-500 mt-1" id="student-attendance-points">--</p>
-                        </div>
-
-                        <!-- السورة المحفوظة -->
-                        <div class="bg-mosque-950 p-4 rounded-lg border border-gold/10 text-center">
-                            <p class="text-xs text-emerald-400 font-bold mb-2">السورة المحفوظة:</p>
-                            <p class="text-lg font-bold text-gold-light" id="student-surah-today">--</p>
-                            <p class="text-xs text-emerald-500 mt-1" id="student-pages-range">--</p>
-                        </div>
-
-                        <!-- النقاط الإضافية -->
-                        <div class="bg-mosque-950 p-4 rounded-lg border border-gold/10 text-center">
-                            <p class="text-xs text-emerald-400 font-bold mb-2">النقاط الإضافية:</p>
-                            <p class="text-lg font-bold text-gold-light" id="student-extra-points">--</p>
-                            <p class="text-xs text-emerald-500 mt-1">سلوك + مشاركة</p>
-                        </div>
-                    </div>
-
-                    <!-- ملاحظات الأستاذ -->
-                    <div class="bg-mosque-900 p-4 rounded-lg border border-gold/10">
-                        <p class="text-xs text-gold font-bold mb-2">📝 ملاحظات أستاذ الحلقة:</p>
-                        <p class="text-sm text-emerald-200 italic" id="student-notes">لم يتم تسجيل أي ملاحظات بعد</p>
+                <!-- Historical Evaluations List -->
+                <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-2xl border border-gold/20 shadow-xl space-y-3">
+                    <h4 class="font-serif text-sm font-bold text-gold-light border-b border-gold/10 pb-2"><i class="fas fa-history"></i> السجل التراكمي لعمليات التحضير والحفظ للأهل</h4>
+                    <div class="overflow-x-auto rounded-xl">
+                        <table class="w-full text-right text-xs">
+                            <thead class="bg-mosque-950 text-gold-light border-b border-gold/20">
+                                <tr>
+                                    <th class="p-3">التاريخ</th>
+                                    <th class="p-3">حالة الحضور</th>
+                                    <th class="p-3">المقروء والحفظ</th>
+                                    <th class="p-3 text-center">النقاط اليومية الممنوحة</th>
+                                    <th class="p-3">ملاحظات المعلم</th>
+                                </tr>
+                            </thead>
+                            <tbody id="student-evaluation-logs-body" class="divide-y divide-emerald-950/20">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-
-                <!-- سجل التقييمات السابقة -->
-                <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-xl border border-gold/20 space-y-4 shadow-xl">
-                    <h4 class="font-bold text-gold-light text-lg flex items-center gap-2">📜 سجل التقييمات السابقة</h4>
-                    <div id="student-logs-container" class="space-y-3">
-                        <!-- Dynamic -->
-                    </div>
-                </div>
-            </section>
-
-            <!-- ================= TAB: PARENT ================= -->
-            <section id="tab-parent" class="hidden space-y-8">
-                <div class="text-center space-y-2">
-                    <h3 class="font-serif text-2xl text-gold-light font-bold">بوابة ولي الأمر</h3>
-                    <p class="text-xs text-emerald-300">متابعة أداء الأبناء والتقييمات اليومية</p>
-                </div>
-
-                <div id="parent-children-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Dynamic -->
-                </div>
-            </section>
-
-            <!-- ================= TAB: TEACHER ================= -->
-            <section id="tab-teacher" class="hidden space-y-8">
-                <div class="text-center space-y-2">
-                    <h3 class="font-serif text-2xl text-gold-light font-bold" id="teacher-ring-title">حلقة المعلم</h3>
-                    <p class="text-xs text-emerald-300">رصد الحضور والسجلات اليومية</p>
-                </div>
-
-                <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-xl border border-gold/20 shadow-xl overflow-x-auto">
-                    <table class="w-full text-right text-xs">
-                        <thead class="bg-mosque-950 text-gold-light border-b border-gold/20">
-                            <tr>
-                                <th class="p-3">اسم الطالب</th>
-                                <th class="p-3">الحضور</th>
-                                <th class="p-3">السورة والصفحات</th>
-                                <th class="p-3">السلوك</th>
-                                <th class="p-3">المشاركة</th>
-                                <th class="p-3">الواجب</th>
-                                <th class="p-3">الملاحظات</th>
-                            </tr>
-                        </thead>
-                        <tbody id="teacher-matrix-body" class="divide-y divide-emerald-950/20">
-                            <!-- Dynamic -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <button onclick="saveDailyLogByTeacher()" class="w-full bg-gradient-to-r from-gold to-gold-dark text-mosque-950 font-bold py-3 rounded-lg shadow-lg hover:brightness-110 transition-all duration-300 flex items-center justify-center gap-2">
-                    <i class="fas fa-save"></i>
-                    <span>حفظ السجل اليومي</span>
-                </button>
-            </section>
-
-            <!-- ================= TAB: ADMIN ================= -->
-            <section id="tab-admin" class="hidden space-y-8">
-                <div class="text-center space-y-2">
-                    <h3 class="font-serif text-2xl text-gold-light font-bold">لوحة تحكم المدير</h3>
-                    <p class="text-xs text-emerald-300">إدارة الحلقات والحسابات والإعدادات</p>
-                </div>
-
-                <div class="flex gap-2 flex-wrap" id="admin-tabs">
-                    <button id="sub-btn-rings" class="admin-sub-btn bg-gold/10 text-gold-light px-4 py-2 rounded text-xs font-bold flex items-center gap-2">
-                        <i class="fas fa-circle"></i> إدارة الحلقات
-                    </button>
-                    <button id="sub-btn-accounts" class="admin-sub-btn text-emerald-300 px-4 py-2 rounded text-xs font-bold flex items-center gap-2">
-                        <i class="fas fa-users"></i> إدارة الحسابات
-                    </button>
-                    <button id="sub-btn-settings" class="admin-sub-btn text-emerald-300 px-4 py-2 rounded text-xs font-bold flex items-center gap-2">
-                        <i class="fas fa-sliders-h"></i> الإعدادات
-                    </button>
-                </div>
-
-                <!-- Sub: Rings -->
-                <div id="admin-sub-rings" class="space-y-4">
-                    <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-xl border border-gold/20 space-y-4 shadow-xl">
-                        <h4 class="font-bold text-gold-light text-sm">إضافة حلقة جديدة</h4>
-                        <form onsubmit="adminAddRing(event)" class="space-y-3">
-                            <input type="text" id="admin-ring-name" placeholder="اسم الحلقة" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
-                            <select id="admin-ring-teacher" class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
-                                <option value="">اختر المعلم</option>
-                            </select>
-                            <button type="submit" class="w-full bg-gold text-mosque-950 font-bold py-2 rounded text-xs hover:brightness-110 transition-all">إضافة الحلقة</button>
-                        </form>
-                    </div>
-
-                    <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-xl border border-gold/20 space-y-4 shadow-xl">
-                        <h4 class="font-bold text-gold-light text-sm">الحلقات الموجودة</h4>
-                        <div id="admin-rings-list" class="space-y-2">
-                            <!-- Dynamic -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sub: Accounts -->
-                <div id="admin-sub-accounts" class="hidden space-y-4">
-                    <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-xl border border-gold/20 space-y-4 shadow-xl">
-                        <h4 class="font-bold text-gold-light text-sm">إضافة طالب جديد</h4>
-                        <form onsubmit="adminAddStudent(event)" class="space-y-3">
-                            <input type="text" id="admin-s-name" placeholder="اسم الطالب الكامل" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
-                            <input type="text" id="admin-s-username" placeholder="اسم المستخدم" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
-                            <input type="password" id="admin-s-password" placeholder="كلمة المرور" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
-                            <select id="admin-s-ring" class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold" required>
-                                <option value="">اختر الحلقة</option>
-                            </select>
-                            <button type="submit" class="w-full bg-gold text-mosque-950 font-bold py-2 rounded text-xs hover:brightness-110 transition-all">تسجيل الطالب</button>
-                        </form>
-                    </div>
-
-                    <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-xl border border-gold/20 space-y-4 shadow-xl">
-                        <h4 class="font-bold text-gold-light text-sm">إضافة معلم جديد</h4>
-                        <form onsubmit="adminAddTeacher(event)" class="space-y-3">
-                            <input type="text" id="admin-t-name" placeholder="اسم المعلم" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
-                            <input type="text" id="admin-t-username" placeholder="اسم المستخدم" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
-                            <input type="password" id="admin-t-password" placeholder="كلمة المرور" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
-                            <button type="submit" class="w-full bg-gold text-mosque-950 font-bold py-2 rounded text-xs hover:brightness-110 transition-all">إضافة معلم</button>
-                        </form>
-                    </div>
-
-                    <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-xl border border-gold/20 space-y-4 shadow-xl">
-                        <h4 class="font-bold text-gold-light text-sm">الطلاب المسجلين</h4>
-                        <div id="admin-students-list" class="space-y-2">
-                            <!-- Dynamic -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sub: Settings -->
-                <div id="admin-sub-settings" class="hidden space-y-4">
-                    <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-xl border border-gold/20 space-y-4 shadow-xl">
-                        <h4 class="font-bold text-gold-light text-sm">إعدادات نظام النقاط</h4>
-                        <form onsubmit="adminSaveSystemSettings(event)" class="space-y-3">
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="text-xs text-emerald-400 block mb-1">حضور باكر</label>
-                                    <input type="number" id="cfg-early" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
-                                </div>
-                                <div>
-                                    <label class="text-xs text-emerald-400 block mb-1">حضور عادي</label>
-                                    <input type="number" id="cfg-regular" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
-                                </div>
-                                <div>
-                                    <label class="text-xs text-emerald-400 block mb-1">حضور متأخر</label>
-                                    <input type="number" id="cfg-late" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
-                                </div>
-                                <div>
-                                    <label class="text-xs text-emerald-400 block mb-1">غياب</label>
-                                    <input type="number" id="cfg-absent" required class="w-full bg-mosque-950 border border-gold/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
-                                </div>
-                            </div>
-                            <button type="submit" class="w-full bg-gold text-mosque-950 font-bold py-2 rounded text-xs hover:brightness-110 transition-all">حفظ الإعدادات</button>
-                        </form>
-                    </div>
-                </div>
-
-                <button onclick="exportJSONBackup()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg shadow-lg transition-all duration-300 flex items-center justify-center gap-2">
-                    <i class="fas fa-download"></i>
-                    <span>تصدير نسخة احتياطية</span>
-                </button>
             </section>
 
         </main>
     </div>
 
+    <!-- PDF Report Layout (Hidden except in direct prints) -->
+    <div id="pdf-report-container" class="hidden print-view max-w-4xl mx-auto p-8 text-black bg-white space-y-6">
+        <div class="text-center border-b-2 border-gold/30 pb-4">
+            <h2 class="text-2xl font-serif font-bold text-mosque-950">صحيفة تقييم الأبناء الدورية - جامع الكوثر</h2>
+            <p class="text-xs text-gray-600 mt-1">صحيفة معتمدة ومستخرجة من منظومة الحلقات القرآنية التربوية الصيفية</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 text-xs border border-gray-300 p-4 rounded-xl bg-gray-50">
+            <div><strong>اسم الطالب الكامل:</strong> <span id="pdf-student-name">--</span></div>
+            <div><strong>الأستاذ المشرف:</strong> <span id="pdf-student-ring">--</span></div>
+            <div><strong>إجمالي نقاط السلوك والمشاركة:</strong> <span id="pdf-student-points">--</span></div>
+            <div><strong>تاريخ استخراج التقرير:</strong> <span id="pdf-print-date">--</span></div>
+        </div>
+
+        <div class="space-y-3">
+            <h4 class="text-sm font-bold border-b pb-1 text-mosque-950">سجل حضور وحفظ الطالب للدروس واللقاءات الأخيرة:</h4>
+            <table class="w-full text-right text-[11px] border-collapse border border-gray-300">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="border border-gray-300 p-2">التاريخ</th>
+                        <th class="border border-gray-300 p-2">الحضور</th>
+                        <th class="border border-gray-300 p-2">المقروء والحفظ</th>
+                        <th class="border border-gray-300 p-2 text-center">النقاط</th>
+                        <th class="border border-gray-300 p-2">ملاحظات المحفظ</th>
+                    </tr>
+                </thead>
+                <tbody id="pdf-evaluation-logs-body">
+                    <!-- Loaded dynamically during print trigger -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pt-8 flex justify-between text-xs font-bold text-center">
+            <div>
+                <p class="text-gray-500">توقيع أستاذ الحلقة</p>
+                <div class="h-12"></div>
+                <p>___________________</p>
+            </div>
+            <div>
+                <p class="text-gray-500">ختم وتوقيع إيجاز المشرف العام</p>
+                <p class="text-[10px] text-gray-400 font-serif">فضيلة الشيخ عبد الفتاح حجازي</p>
+                <div class="h-12"></div>
+                <p>___________________</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Identity Bar -->
+    <footer class="no-print bg-mosque-950 border-t border-gold/20 py-4 text-center">
+        <p class="text-xs text-emerald-600 font-bold">جميع الحقوق محفوظة © جامع الكوثر والمنظومة التعليمية المتطورة ٢٠٢٦</p>
+    </footer>
+
     <script>
-        // ==================== GLOBAL STATE ====================
-        let db = null;
-        let currentUser = null;
-        const API_URL = window.location.origin;
-
-        // ==================== INITIALIZATION ====================
-        window.addEventListener('load', async () => {
-            await loadDB();
-        });
-
-        async function loadDB() {
-            try {
-                const response = await fetch(`${API_URL}/api/db`);
-                if (!response.ok) throw new Error('فشل تحميل قاعدة البيانات');
-                db = await response.json();
-                showLogin();
-            } catch (error) {
-                console.error('خطأ:', error);
-                showToast('فشل تحميل قاعدة البيانات', 'error');
+        // ==================== GLOBAL APP STATE ====================
+        // Empty by default (Except for Admin account - No fake teachers/students)
+        let state = {
+            users: [
+                { id: "u-admin", username: "admin", password: "admin123", role: "admin", displayName: "فضيلة الشيخ عبد الفتاح حجازي" }
+            ],
+            students: [],
+            logs: [],
+            settings: {
+                early: 30,       // Points awarded for early attendance (Before 5:00)
+                regular: 15,     // Points awarded for regular attendance (5:00 - 6:00)
+                late: 5,         // Points awarded for late attendance (After 6:00)
+                absent: 0
             }
-        }
+        };
 
-        async function saveDB() {
-            try {
-                const response = await fetch(`${API_URL}/api/db`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(db)
-                });
-                if (!response.ok) throw new Error('فشل حفظ قاعدة البيانات');
-                return true;
-            } catch (error) {
-                console.error('خطأ:', error);
-                showToast('فشل حفظ البيانات', 'error');
-                return false;
+        let activeUser = null;
+        let activeTab = "admin";
+        let calendarDate = new Date(); // Active Calendar state
+        let html5QrScanner = null;
+        let html5LoginScanner = null;
+        
+        let isLoginScanning = false;
+        let isAdminScanning = false;
+        let isCalendarExpanded = false; // State to toggle calendar size
+
+        // Web Audio sound engine for high fidelity beep
+        const soundEngine = {
+            playBeep: () => {
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = "sine";
+                    osc.frequency.setValueAtTime(880, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.15);
+                } catch(e) {}
+            },
+            playSuccess: () => {
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc1 = ctx.createOscillator();
+                    const osc2 = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc1.frequency.setValueAtTime(523.25, ctx.currentTime);
+                    osc2.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+                    osc1.connect(gain);
+                    osc2.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc1.start();
+                    osc1.stop(ctx.currentTime + 0.1);
+                    osc2.start(ctx.currentTime + 0.1);
+                    osc2.stop(ctx.currentTime + 0.35);
+                } catch(e) {}
             }
-        }
+        };
 
-        // ==================== TOAST & CONFIRM ====================
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('custom-toast');
-            const icon = document.getElementById('toast-icon');
-            const wrapper = document.getElementById('toast-icon-wrapper');
-            
-            document.getElementById('toast-message').textContent = message;
-            
-            if (type === 'error') {
-                icon.className = 'fas fa-exclamation-circle text-base';
-                wrapper.className = 'bg-red-600 text-white p-2 rounded-full';
+        // ==================== Local Database Management ====================
+        function loadState() {
+            const saved = localStorage.getItem("alkauthar_production_v2");
+            if (saved) {
+                try {
+                    state = JSON.parse(saved);
+                    // Ensure admin always exists in memory
+                    if (!state.users.some(u => u.username === "admin")) {
+                        state.users.push({ id: "u-admin", username: "admin", password: "admin123", role: "admin", displayName: "فضيلة الشيخ عبد الفتاح حجازي" });
+                    }
+                } catch(e) {
+                    saveState();
+                }
             } else {
-                icon.className = 'fas fa-check-circle text-base';
-                wrapper.className = 'bg-gold text-mosque-950 p-2 rounded-full';
+                saveState();
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem("alkauthar_production_v2", JSON.stringify(state));
+        }
+
+        // ==================== Authentication & Login/Logout ====================
+        function handleLogin(e) {
+            if (e) e.preventDefault();
+            const identifier = document.getElementById("login-identifier").value.trim();
+            const password = document.getElementById("login-password").value;
+
+            const user = state.users.find(u => u.username.toLowerCase() === identifier.toLowerCase() && u.password === password);
+            if (user) {
+                loginAsUser(user);
+            } else {
+                document.getElementById("login-error").classList.remove("hidden");
+            }
+        }
+
+        function loginAsUser(user) {
+            activeUser = user;
+            document.getElementById("login-error").classList.add("hidden");
+            
+            // Set Display name
+            document.getElementById("current-user-fullname").innerText = activeUser.displayName;
+            
+            // Transition UI
+            document.getElementById("login-screen").classList.add("hidden");
+            document.getElementById("app-header").classList.remove("hidden");
+            document.getElementById("portal-screen").classList.remove("hidden");
+            
+            soundEngine.playSuccess();
+            initTabs();
+            autoFillAbsentsForToday(); // Automatically flag students unscanned today as absent
+        }
+
+        function logout() {
+            activeUser = null;
+            stopQRLoginScanner();
+            stopAdminQRScanner();
+            document.getElementById("login-screen").classList.remove("hidden");
+            document.getElementById("app-header").classList.add("hidden");
+            document.getElementById("portal-screen").classList.add("hidden");
+        }
+
+        // ==================== QR Login Camera Setup ====================
+        function startQRLoginScanner() {
+            document.getElementById("qr-reader-login-container").classList.remove("hidden");
+            document.getElementById("btn-start-qr-login").classList.add("hidden");
+
+            html5LoginScanner = new Html5Qrcode("qr-reader-login");
+            const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+                // Find student with matching ID
+                const student = state.students.find(s => s.id === decodedText);
+                if (student) {
+                    const user = state.users.find(u => u.id === student.userId);
+                    if (user) {
+                        showToast(`مرحباً بك يا ${student.name} • تم تسجيل الدخول الآمن بنجاح`);
+                        stopQRLoginScanner();
+                        loginAsUser(user);
+                    } else {
+                        showToast("تعذر العثور على بيانات حساب الدخول الخاصة بالطالب!", "error");
+                    }
+                } else {
+                    showToast("بطاقة الـ QR هذه غير مسجلة في جامع الكوثر!", "error");
+                }
+            };
+            const config = { fps: 10, qrbox: { width: 200, height: 200 } };
+            html5LoginScanner.start({ facingMode: "user" }, config, qrCodeSuccessCallback)
+                .then(() => {
+                    isLoginScanning = true;
+                })
+                .catch(err => {
+                    showToast("يرجى منح صلاحية الكاميرا لمسح الـ QR للبطاقة.", "error");
+                });
+        }
+
+        function stopQRLoginScanner() {
+            if (html5LoginScanner && isLoginScanning) {
+                html5LoginScanner.stop().then(() => {
+                    isLoginScanning = false;
+                    document.getElementById("qr-reader-login-container").classList.add("hidden");
+                    document.getElementById("btn-start-qr-login").classList.remove("hidden");
+                }).catch(() => {
+                    isLoginScanning = false;
+                });
+            } else {
+                document.getElementById("qr-reader-login-container").classList.add("hidden");
+                document.getElementById("btn-start-qr-login").classList.remove("hidden");
+            }
+        }
+
+        // ==================== Configuring Tabs by Role ====================
+        function initTabs() {
+            const container = document.getElementById("nav-tabs-container");
+            container.innerHTML = "";
+
+            let availableTabs = [];
+            
+            if (activeUser.role === "admin") {
+                availableTabs = [
+                    { id: "admin", name: "لوحة تحكم المدير", icon: "fa-chart-pie" },
+                    { id: "calendar", name: "الروزنامة والتقييم", icon: "fa-calendar-alt" },
+                    { id: "qr", name: "ماسح الـ QR والتحضير", icon: "fa-qrcode" }
+                ];
+            } else if (activeUser.role === "teacher") {
+                availableTabs = [
+                    { id: "calendar", name: "الروزنامة والتقييم لطلابي", icon: "fa-calendar-alt" },
+                    { id: "qr", name: "ماسح الـ QR والتحضير", icon: "fa-qrcode" }
+                ];
+            } else if (activeUser.role === "student") {
+                // Individual student acts as parent card directly
+                availableTabs = [
+                    { id: "student", name: "كارت متابعة الأبناء للأهالي", icon: "fa-user-graduate" }
+                ];
+            }
+
+            availableTabs.forEach((tab, index) => {
+                const btn = document.createElement("button");
+                btn.className = `tab-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${index === 0 ? 'bg-gold text-mosque-950 shadow-md shadow-gold/20' : 'text-emerald-300 hover:bg-mosque-800'}`;
+                btn.innerHTML = `<i class="fas ${tab.icon}"></i> <span>${tab.name}</span>`;
+                btn.onclick = () => switchTab(tab.id, btn);
+                container.appendChild(btn);
+            });
+
+            switchTab(availableTabs[0].id);
+        }
+
+        function switchTab(tabId, targetBtn = null) {
+            if (!activeUser) return;
+            
+            activeTab = tabId;
+
+            if (targetBtn) {
+                document.querySelectorAll(".tab-btn").forEach(btn => {
+                    btn.className = "tab-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all text-emerald-300 hover:bg-mosque-800";
+                });
+                targetBtn.className = "tab-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all bg-gold text-mosque-950 shadow-md shadow-gold/20";
+            }
+
+            // Hide all tabs
+            document.getElementById("tab-admin").classList.add("hidden");
+            document.getElementById("tab-calendar").classList.add("hidden");
+            document.getElementById("tab-qr").classList.add("hidden");
+            document.getElementById("tab-student").classList.add("hidden");
+
+            // Show current active tab
+            document.getElementById(`tab-${tabId}`).classList.remove("hidden");
+
+            if (tabId === "admin") {
+                renderAdminDashboard();
+            } else if (tabId === "calendar") {
+                renderCalendar();
+            } else if (tabId === "qr") {
+                loadQRScannerView();
+            } else if (tabId === "student") {
+                renderStudentPortal();
+            }
+        }
+
+        // ==================== Managing Custom Toast Alerts & Confirmations ====================
+        function showToast(message, type = "success") {
+            const toast = document.getElementById("custom-toast");
+            const icon = document.getElementById("toast-icon");
+            const wrapper = document.getElementById("toast-icon-wrapper");
+            
+            document.getElementById("toast-message").textContent = message;
+            
+            if (type === "error") {
+                icon.className = "fas fa-exclamation-circle text-base";
+                wrapper.className = "bg-red-600 text-white p-2 rounded-full";
+            } else {
+                icon.className = "fas fa-check-circle text-base";
+                wrapper.className = "bg-gold text-mosque-950 p-2 rounded-full";
             }
             
-            toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+            toast.classList.remove("translate-y-20", "opacity-0", "pointer-events-none");
             setTimeout(() => {
                 toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
             }, 3000);
@@ -517,646 +932,832 @@
             const closeConfirm = () => {
                 modal.classList.add('opacity-0');
                 setTimeout(() => modal.classList.add('hidden'), 300);
-                yesBtn.removeEventListener('click', handleYes);
-                noBtn.removeEventListener('click', closeConfirm);
+                yesBtn.onclick = null;
+                noBtn.onclick = null;
             };
             
-            const handleYes = () => {
+            yesBtn.onclick = () => {
                 callback();
                 closeConfirm();
             };
-            
-            yesBtn.addEventListener('click', handleYes);
-            noBtn.addEventListener('click', closeConfirm);
+            noBtn.onclick = closeConfirm;
         }
 
-        // ==================== LOGIN ====================
-        async function handleLogin(event) {
-            event.preventDefault();
-            const username = document.getElementById('login-identifier').value;
-            const password = document.getElementById('login-password').value;
-            
-            try {
-                const response = await fetch(`${API_URL}/api/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-                
-                if (!response.ok) {
-                    document.getElementById('login-error').classList.remove('hidden');
-                    return;
-                }
-                
-                const result = await response.json();
-                currentUser = result.user;
-                launchPortal();
-            } catch (error) {
-                console.error('خطأ:', error);
-                document.getElementById('login-error').classList.remove('hidden');
-            }
-        }
-
-        function showLogin() {
-            document.getElementById('login-screen').classList.remove('hidden');
-            document.getElementById('portal-screen').classList.add('hidden');
-        }
-
-        function launchPortal() {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('portal-screen').classList.remove('hidden');
-            
-            document.getElementById('portal-user-badge').innerText = `مرحباً بك: ${currentUser.displayName}`;
-            
-            const tabsContainer = document.getElementById('nav-tabs-container');
-            tabsContainer.innerHTML = '';
-            
-            let tabs = [
-                { id: 'leaderboard', name: 'لوحة الشرف', icon: 'fa-trophy' }
-            ];
-            
-            if (currentUser.role === 'admin') {
-                tabs.push({ id: 'admin', name: 'إدارة المنظومة', icon: 'fa-user-shield' });
-                tabs.push({ id: 'teacher', name: 'لوحة الحلقات', icon: 'fa-chalkboard-teacher' });
-            }
-            
-            if (currentUser.role === 'teacher') {
-                tabs.push({ id: 'teacher', name: 'لوحة الحلقات', icon: 'fa-chalkboard-teacher' });
-            }
-            
-            if (currentUser.role === 'student') {
-                tabs.push({ id: 'student', name: 'بوابة الطالب', icon: 'fa-user-graduate' });
-            }
-            
-            if (currentUser.role === 'parent') {
-                tabs.push({ id: 'parent', name: 'بوابة الأهل', icon: 'fa-home' });
-            }
-            
-            tabs.forEach(tab => {
-                const btn = document.createElement('button');
-                btn.className = 'px-3 py-2 rounded text-xs font-bold flex items-center gap-1 text-emerald-300 hover:bg-mosque-800 transition-all';
-                btn.innerHTML = `<i class="fas ${tab.icon}"></i> ${tab.name}`;
-                btn.onclick = () => switchTab(tab.id);
-                tabsContainer.appendChild(btn);
-            });
-            
-            switchTab('leaderboard');
-        }
-
-        function switchTab(tabId) {
-            document.querySelectorAll('section[id^="tab-"]').forEach(s => s.classList.add('hidden'));
-            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-            
-            if (tabId === 'leaderboard') renderLeaderboard();
-            else if (tabId === 'student') renderStudentDashboard();
-            else if (tabId === 'parent') renderParentDashboard();
-            else if (tabId === 'teacher') renderTeacherRing();
-            else if (tabId === 'admin') renderAdminPanel();
-        }
-
-        function logout() {
-            currentUser = null;
-            showLogin();
-            showToast('تم تسجيل الخروج بنجاح');
-        }
-
-        // ==================== LEADERBOARD ====================
-        async function renderLeaderboard() {
-            try {
-                const response = await fetch(`${API_URL}/api/leaderboard`);
-                if (!response.ok) throw new Error('فشل تحميل لوحة الشرف');
-                
-                const data = await response.json();
-                const searchTerm = document.getElementById('lead-search').value.toLowerCase();
-                
-                const filtered = data.leaderboard.filter(s => 
-                    s.name.includes(searchTerm) || s.ringName.includes(searchTerm)
-                );
-                
-                let html = '';
-                filtered.forEach((student, index) => {
-                    html += `
-                        <tr class="hover:bg-mosque-800/10 transition-all">
-                            <td class="p-3 text-center font-bold text-gold-light">${index + 1}</td>
-                            <td class="p-3 font-bold text-white">${student.name}</td>
-                            <td class="p-3 text-emerald-300">${student.ringName}</td>
-                            <td class="p-3 text-center">
-                                <span class="bg-gold/20 text-gold-light px-3 py-1 rounded-full font-bold">${student.points}</span>
-                            </td>
-                        </tr>
-                    `;
-                });
-                
-                document.getElementById('lead-table-body').innerHTML = html;
-                
-                let ringHtml = '';
-                data.ringAverages.forEach(ring => {
-                    ringHtml += `
-                        <div class="bg-mosque-950 p-3 rounded border border-gold/10">
-                            <div class="flex justify-between items-center">
-                                <span class="text-xs text-emerald-400">${ring.ringName}</span>
-                                <span class="text-sm font-bold text-gold-light">${ring.average}</span>
-                            </div>
-                            <p class="text-xs text-emerald-700 mt-1">${ring.studentCount} طالب</p>
-                        </div>
-                    `;
-                });
-                
-                document.getElementById('ring-averages-container').innerHTML = ringHtml;
-            } catch (error) {
-                console.error('خطأ:', error);
-                showToast('فشل تحميل لوحة الشرف', 'error');
-            }
-        }
-
-        // ==================== STUDENT DASHBOARD ====================
-        async function renderStudentDashboard() {
-            const student = db.students.find(s => s.userId === currentUser.id);
-            if (!student) {
-                document.getElementById('student-logs-container').innerHTML = '<p class="text-emerald-700">لم يتم العثور على بيانات الطالب</p>';
+        // ==================== WhatsApp Interactive Message Sender ====================
+        function shareWhatsAppReport(studentId) {
+            const student = state.students.find(s => s.id === studentId);
+            if (!student || !student.whatsapp) {
+                showToast("رقم واتساب الأهل غير مسجل أو مفقود لهذا الطالب!", "error");
                 return;
             }
-            
-            document.getElementById('student-welcome-name').textContent = `أهلاً بك يا ${student.name}`;
-            document.getElementById('student-total-points').textContent = student.points;
-            
-            const logs = db.logs.filter(l => l.studentId === student.id).sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            let html = '';
-            logs.slice(0, 5).forEach(log => {
-                html += `
-                    <div class="bg-mosque-950 p-4 rounded border border-gold/10">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="text-xs text-gold font-bold">${log.date}</span>
-                            <span class="text-xs bg-emerald-600/20 text-emerald-300 px-2 py-1 rounded">${log.attendance === 'early' ? '🌱 باكر' : log.attendance === 'regular' ? '✓ حاضر' : log.attendance === 'late' ? '⏰ متأخر' : '✗ غائب'}</span>
-                        </div>
-                        <p class="text-xs text-emerald-200"><strong>السورة:</strong> ${log.surah || 'لا يوجد'}</p>
-                        <p class="text-xs text-emerald-200"><strong>الصفحات:</strong> من ${log.pageFrom} إلى ${log.pageTo}</p>
-                        <p class="text-xs text-emerald-200"><strong>الملاحظات:</strong> ${log.notes || 'لا توجد'}</p>
-                    </div>
-                `;
-            });
-            
-            document.getElementById('student-logs-container').innerHTML = html || '<p class="text-emerald-700">لا توجد تقييمات حتى الآن</p>';
-        }
 
-        // ==================== PARENT DASHBOARD ====================
-        function renderParentDashboard() {
-            let targetParentId = null;
-            if (currentUser.role === 'admin') {
-                const firstParent = db.users.find(u => u.role === 'parent');
-                if (firstParent) targetParentId = firstParent.id;
-            } else {
-                targetParentId = currentUser.id;
-            }
-            
-            const children = db.students.filter(s => s.parentId === targetParentId);
-            let html = '';
-            
-            children.forEach(child => {
-                const childLogs = db.logs.filter(l => l.studentId === child.id).sort((a, b) => new Date(b.date) - new Date(a.date));
-                const latestLog = childLogs[0] || null;
-                const ring = db.rings.find(r => r.id === child.ringId) || { name: 'غير محدد' };
-                
-                html += `
-                    <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-5 rounded-xl border border-gold/20 space-y-4">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h4 class="font-serif text-xl font-bold text-white">${child.name}</h4>
-                                <p class="text-[11px] text-emerald-400 mt-1">الحلقة: ${ring.name}</p>
-                            </div>
-                            <div class="bg-mosque-950/80 px-4 py-2 rounded border border-gold/20 text-center min-w-20">
-                                <span class="text-2xl font-black text-gold-light block">${child.points}</span>
-                                <span class="text-[9px] text-emerald-400 uppercase tracking-widest">النقاط</span>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-mosque-950 p-4 rounded border border-gold/10 text-xs space-y-2">
-                            <span class="text-gold-light font-bold block border-b border-gold/10 pb-1.5"><i class="fas fa-book-reader"></i> آخر تقييم:</span>
-                            ${latestLog ? `
-                                <div class="grid grid-cols-2 gap-2">
-                                    <div><span class="text-emerald-400 font-bold">الحضور:</span> ${latestLog.attendance === 'early' ? '🌱 باكر' : latestLog.attendance === 'regular' ? '✓ حاضر' : latestLog.attendance === 'late' ? '⏰ متأخر' : '✗ غائب'}</div>
-                                    <div><span class="text-emerald-400 font-bold">السورة:</span> ${latestLog.surah || 'لا يوجد'}</div>
-                                    <div><span class="text-emerald-400 font-bold">الصفحات:</span> من ${latestLog.pageFrom} إلى ${latestLog.pageTo}</div>
-                                    <div><span class="text-emerald-400 font-bold">النقاط:</span> +${latestLog.behavior + latestLog.participation}</div>
-                                    <div class="col-span-2"><span class="text-gold font-bold">الواجب:</span> ${latestLog.homework || 'مراجعة عامة'}</div>
-                                </div>
-                                <div class="pt-2 border-t border-emerald-950/40 mt-1">
-                                    <span class="text-gold block font-bold mb-1">📝 ملاحظات الأستاذ:</span>
-                                    <p class="text-emerald-200 italic">"${latestLog.notes || 'لا توجد ملاحظة'}"</p>
-                                </div>
-                            ` : `
-                                <p class="text-emerald-700 py-1 text-center">لا يوجد أي تقييم مسجل حتى الآن.</p>
-                            `}
-                        </div>
-                    </div>
-                `;
-            });
-            
-            document.getElementById('parent-children-container').innerHTML = html || '<div class="col-span-2 text-center py-10 bg-mosque-950/40 rounded border border-gold/10 text-emerald-600">لا يوجد أبناء مسجلين بهذا الحساب</div>';
-        }
-
-        // ==================== TEACHER DASHBOARD ====================
-        let teacherAssignedRing = null;
-
-        function renderTeacherRing() {
-            let targetTeacherId = currentUser.role === 'admin' ? db.users.find(u => u.role === 'teacher')?.id : currentUser.id;
-            teacherAssignedRing = db.rings.find(r => r.teacherId === targetTeacherId);
-            
-            const titleEl = document.getElementById('teacher-ring-title');
-            const tbody = document.getElementById('teacher-matrix-body');
-            tbody.innerHTML = '';
-            
-            if (!teacherAssignedRing) {
-                titleEl.innerText = 'لا توجد حلقة مخصصة لك';
-                tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-emerald-700">الرجاء التوجه للوحة المدير وإنشاء حلقة جديدة</td></tr>';
-                return;
-            }
-            
-            titleEl.innerText = `حلقة المعلم: ${teacherAssignedRing.name}`;
-            
-            const ringStudents = db.students.filter(s => s.ringId === teacherAssignedRing.id);
-            
-            if (ringStudents.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-emerald-700">لا يوجد طلاب مسجلين في هذه الحلقة</td></tr>';
-                return;
-            }
-            
             const todayStr = new Date().toISOString().split('T')[0];
+            const log = state.logs.find(l => l.studentId === studentId && l.date === todayStr);
+
+            let attendanceText = "غائب ✗ (لم يرصد كود الـ QR اليوم)";
+            let memoText = "لم يتم التسميع بعد";
+            let pointsText = "0 ن";
+            let notesText = "لا توجد ملاحظات مسجلة لليوم";
+            let homeworkText = "مراجعة اللوح والأحكام العامة";
+
+            if (log) {
+                if (log.attendance === "early") attendanceStatusText = "🌿 حضور باكر متميز (قبل الـ 5:00 م)";
+                else if (log.attendance === "regular") attendanceStatusText = "حضور عادي في الوقت (5:00م - 6:00م)";
+                else if (log.attendance === "late") attendanceStatusText = "⏰ حضور متأخر (بعد الـ 6:00 م)";
+                else attendanceStatusText = "غائب اليوم ✗";
+
+                attendanceText = attendanceStatusText;
+                if (log.surah) {
+                    memoText = `سورة *${log.surah}* (من صفحة ${log.pageFrom || 1} إلى ${log.pageTo || 1})`;
+                }
+                pointsText = `+${(log.behavior || 0) + (log.participation || 0)} نقطة تميز سلوكي ومشاركة`;
+                if (log.notes) notesText = log.notes;
+                if (log.homework) homeworkText = log.homework;
+            }
+
+            // Elegant Islamic Report Message Formulation
+            const msg = `🕌 *تقرير المتابعة اليومي من جامع الكوثر* 🕌\n` +
+                        `تحت إشراف فضيلة الشيخ *عبد الفتاح حجازي*\n\n` +
+                        `نود إعلامكم بالتقرير التربوي لولدكم الحبيب: *${student.name}*\n` +
+                        `ليوم: *${todayStr}*\n\n` +
+                        `▪️ *حالة الحضور اليومي:* ${attendanceText}\n` +
+                        `▪️ *الحفظ والتسميع:* ${memoText}\n` +
+                        `▪️ *النقاط المستحقة اليوم:* ${pointsText}\n` +
+                        `▪️ *الواجب المنزلي القادم:* ${homeworkText}\n` +
+                        `▪️ *توجيهات المحفظ وسلوكه:* "${notesText}"\n\n` +
+                        `_نفع الله به وبكم، وجعلنا وإياكم من أهل القرآن الكريم الذين هم أهل الله وخاصته._ ✨`;
+
+            // Open secure browser WhatsApp web layout
+            const formattedPhone = student.whatsapp.replace(/\D/g, ''); // Clean non-numbers
+            const url = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(msg)}`;
+            window.open(url, '_blank');
+        }
+
+        // ==================== Calendar Expand/Collapse Interaction ====================
+        function toggleCalendarSize() {
+            const container = document.getElementById("calendar-expandable-container");
+            const btn = document.getElementById("btn-toggle-calendar");
             
-            ringStudents.forEach(st => {
-                const log = db.logs.find(l => l.studentId === st.id && l.date === todayStr) || {
-                    attendance: 'regular',
-                    surah: '',
-                    pageFrom: '',
-                    pageTo: '',
-                    behavior: 0,
-                    participation: 0,
-                    notes: '',
-                    homework: ''
-                };
+            isCalendarExpanded = !isCalendarExpanded;
+            
+            if (isCalendarExpanded) {
+                container.style.maxHeight = "1000px"; // Expand completely to show full dates
+                btn.innerHTML = `<i class="fas fa-compress-alt"></i> تصغير الروزنامة`;
+            } else {
+                container.style.maxHeight = "180px"; // Collapse to compact mode
+                btn.innerHTML = `<i class="fas fa-expand-alt"></i> تكبير الروزنامة`;
+            }
+        }
+
+        // ==================== Managing Admin Dashboard & Accounts ====================
+        function renderAdminDashboard() {
+            if (!activeUser || activeUser.role !== "admin") return;
+            
+            const teachers = state.users.filter(u => u.role === "teacher");
+            document.getElementById("stat-total-students").innerText = state.students.length;
+            document.getElementById("stat-total-teachers").innerText = teachers.length;
+            
+            const totalPoints = state.students.reduce((acc, curr) => acc + curr.points, 0);
+            document.getElementById("stat-total-points").innerText = totalPoints;
+            document.getElementById("stat-active-day").innerText = new Date().toLocaleDateString('ar-SY', { weekday: 'short', day: 'numeric', month: 'short' });
+
+            // Load Teachers List in Student Creation select box
+            const teacherSelect = document.getElementById("admin-student-teacher-id");
+            teacherSelect.innerHTML = `<option value="">اختر الأستاذ المشرف</option>`;
+            teachers.forEach(t => {
+                teacherSelect.innerHTML += `<option value="${t.id}">${t.displayName}</option>`;
+            });
+
+            renderAdminStudentsTable();
+        }
+
+        function renderAdminStudentsTable() {
+            const search = document.getElementById("admin-student-search").value.toLowerCase();
+            const body = document.getElementById("admin-dashboard-students-body");
+            const warning = document.getElementById("admin-empty-students-warning");
+            const table = document.getElementById("admin-students-table");
+            body.innerHTML = "";
+
+            const filtered = state.students.filter(s => s.name.toLowerCase().includes(search));
+            filtered.sort((a,b) => b.points - a.points); // Sort by leader rank
+
+            if (filtered.length === 0) {
+                warning.classList.remove("hidden");
+                table.classList.add("hidden");
+                return;
+            } else {
+                warning.classList.add("hidden");
+                table.classList.remove("hidden");
+            }
+
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            filtered.forEach(student => {
+                const teacher = state.users.find(u => u.id === student.teacherId) || { displayName: "غير مخصص" };
+                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${student.id}`;
                 
-                const tr = `
+                // Get today's attendance status
+                const todayLog = state.logs.find(l => l.studentId === student.id && l.date === todayStr);
+                let attendanceBadge = `<span class="bg-red-950 text-red-400 border border-red-500/20 px-2 py-0.5 rounded-lg text-[10px] font-bold">غائب</span>`;
+                
+                if (todayLog) {
+                    if (todayLog.attendance === "early") {
+                        attendanceBadge = `<span class="bg-emerald-950 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-lg text-[10px] font-bold">🌱 باكر</span>`;
+                    } else if (todayLog.attendance === "regular") {
+                        attendanceBadge = `<span class="bg-blue-950 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-lg text-[10px] font-bold">حاضر</span>`;
+                    } else if (todayLog.attendance === "late") {
+                        attendanceBadge = `<span class="bg-yellow-950 text-yellow-400 border border-gold/20 px-2 py-0.5 rounded-lg text-[10px] font-bold">متأخر</span>`;
+                    }
+                }
+
+                body.innerHTML += `
                     <tr class="hover:bg-mosque-800/10 transition-all">
-                        <td class="p-3 font-bold text-white">${st.name}</td>
-                        <td class="p-3">
-                            <select id="att-${st.id}" class="bg-mosque-950 border border-gold/15 rounded p-1.5 text-xs text-white focus:outline-none w-full">
-                                <option value="early" ${log.attendance === 'early' ? 'selected' : ''}>🌱 باكر (+${db.settings.early})</option>
-                                <option value="regular" ${log.attendance === 'regular' ? 'selected' : ''}>✓ حاضر (+${db.settings.regular})</option>
-                                <option value="late" ${log.attendance === 'late' ? 'selected' : ''}>⏰ متأخر (+${db.settings.late})</option>
-                                <option value="absent" ${log.attendance === 'absent' ? 'selected' : ''}>✗ غائب (0)</option>
-                            </select>
+                        <td class="p-3 font-bold text-white">${student.name}</td>
+                        <td class="p-3 text-emerald-300 text-[11px]">${teacher.displayName}</td>
+                        <td class="p-3 text-center">${attendanceBadge}</td>
+                        <td class="p-3 text-center">
+                            <span class="bg-gold/20 text-gold-light px-2.5 py-0.5 rounded-lg font-bold">${student.points}</span>
                         </td>
-                        <td class="p-3">
-                            <div class="flex gap-1 items-center">
-                                <input type="text" id="surah-${st.id}" value="${log.surah}" placeholder="السورة" class="bg-mosque-950 border border-gold/15 rounded p-1.5 text-xs text-white w-24">
-                                <input type="number" id="from-${st.id}" value="${log.pageFrom}" placeholder="من" class="bg-mosque-950 border border-gold/15 rounded p-1.5 text-xs text-white w-12 text-center">
-                                <input type="number" id="to-${st.id}" value="${log.pageTo}" placeholder="إلى" class="bg-mosque-950 border border-gold/15 rounded p-1.5 text-xs text-white w-12 text-center">
-                            </div>
-                        </td>
-                        <td class="p-3">
-                            <input type="number" id="beh-${st.id}" value="${log.behavior}" class="bg-mosque-950 border border-gold/15 rounded p-1.5 text-xs text-white w-16 text-center mx-auto block">
-                        </td>
-                        <td class="p-3">
-                            <input type="number" id="part-${st.id}" value="${log.participation}" class="bg-mosque-950 border border-gold/15 rounded p-1.5 text-xs text-white w-16 text-center mx-auto block">
-                        </td>
-                        <td class="p-3">
-                            <input type="text" id="hw-${st.id}" value="${log.homework || ''}" placeholder="الواجب" class="bg-mosque-950 border border-gold/15 rounded p-1.5 text-xs text-gold-light w-full">
-                        </td>
-                        <td class="p-3">
-                            <input type="text" id="notes-${st.id}" value="${log.notes}" placeholder="ملاحظات" class="bg-mosque-950 border border-gold/15 rounded p-1.5 text-xs text-white w-full">
+                        <td class="p-3 text-center font-mono text-emerald-400 text-xs">${student.whatsapp || '--'}</td>
+                        <td class="p-3 text-center flex justify-center gap-1.5">
+                            <button onclick="shareWhatsAppReport('${student.id}')" class="bg-emerald-900 hover:bg-emerald-800 text-white px-2.5 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1">
+                                <i class="fab fa-whatsapp"></i> تقرير الأهل
+                            </button>
+                            <a href="${qrUrl}" target="_blank" class="bg-mosque-800 hover:bg-mosque-700 text-gold border border-gold/35 px-2.5 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1">
+                                <i class="fas fa-qrcode"></i> البطاقة
+                            </a>
+                            <button onclick="adminDeleteStudent('${student.id}')" class="bg-red-950 hover:bg-red-900 text-red-400 border border-red-500/20 px-2.5 py-1 rounded-lg text-[10px] font-bold">
+                                <i class="fas fa-trash-alt"></i> حذف
+                            </button>
                         </td>
                     </tr>
                 `;
-                tbody.innerHTML += tr;
             });
         }
 
-        async function saveDailyLogByTeacher() {
-            if (!teacherAssignedRing) return;
+        // ==================== Managing Account Additions & Actions ====================
+        function adminAddTeacher(e) {
+            e.preventDefault();
+            const displayName = document.getElementById("admin-teacher-fullname").value.trim();
+            const username = document.getElementById("admin-teacher-username").value.trim().toLowerCase();
+            const password = document.getElementById("admin-teacher-password").value;
+
+            if (state.users.some(u => u.username === username)) {
+                showToast("اسم المستخدم الخاص بالمعلم مسجل بالفعل!", "error");
+                return;
+            }
+
+            const newTeacher = {
+                id: `u-t-${Date.now()}`,
+                username,
+                password,
+                role: "teacher",
+                displayName
+            };
+
+            state.users.push(newTeacher);
+            saveState();
+            showToast("تم إنشاء حساب الأستاذ بنجاح كحلقة قرآنية مستقلة!");
             
-            const ringStudents = db.students.filter(s => s.ringId === teacherAssignedRing.id);
+            document.getElementById("admin-teacher-fullname").value = "";
+            document.getElementById("admin-teacher-username").value = "";
+            document.getElementById("admin-teacher-password").value = "";
+            
+            renderAdminDashboard();
+        }
+
+        function adminAddStudent(e) {
+            e.preventDefault();
+            const fullname = document.getElementById("admin-student-fullname").value.trim();
+            const username = document.getElementById("admin-student-username").value.trim().toLowerCase();
+            const password = document.getElementById("admin-student-password").value;
+            const whatsapp = document.getElementById("admin-student-whatsapp").value.trim();
+            const teacherId = document.getElementById("admin-student-teacher-id").value;
+
+            if (!teacherId) {
+                showToast("يرجى تحديد أستاذ مشرف لتسكين الطالب في حلقته!", "error");
+                return;
+            }
+
+            if (state.users.some(u => u.username === username)) {
+                showToast("اسم المستخدم هذا مكرر بالفعل!", "error");
+                return;
+            }
+
+            // Simple digits regex verification
+            if (!/^\d{8,15}$/.test(whatsapp)) {
+                showToast("صيغة رقم الواتساب غير صحيحة! يرجى كتابة أرقام فقط (مثال: 963955123456)", "error");
+                return;
+            }
+
+            const userId = `u-s-${Date.now()}`;
+            const newUser = {
+                id: userId,
+                username,
+                password,
+                role: "student",
+                displayName: fullname
+            };
+
+            state.users.push(newUser);
+
+            const newStudent = {
+                id: `s-${Date.now()}`,
+                userId: userId,
+                name: fullname,
+                teacherId: teacherId,
+                whatsapp: whatsapp, // Storing WhatsApp perfectly inside Student memory
+                points: 0,
+                attendanceRate: 100,
+                memorizationRate: 0
+            };
+            state.students.push(newStudent);
+
+            saveState();
+            showToast("تم إنشاء حساب الطالب وتوليد كود الـ QR الخاص ببطاقته بنجاح!");
+            
+            document.getElementById("admin-student-fullname").value = "";
+            document.getElementById("admin-student-username").value = "";
+            document.getElementById("admin-student-password").value = "";
+            document.getElementById("admin-student-whatsapp").value = "";
+            
+            renderAdminDashboard();
+        }
+
+        function adminDeleteStudent(id) {
+            showConfirm("هل أنت متأكد من رغبتك بحذف هذا الطالب وحساب الدخول والـ QR الخاص به نهائياً من جامع الكوثر؟", () => {
+                const student = state.students.find(s => s.id === id);
+                if (student) {
+                    state.users = state.users.filter(u => u.id !== student.userId);
+                    state.students = state.students.filter(s => s.id !== id);
+                    state.logs = state.logs.filter(l => l.studentId !== id);
+                    saveState();
+                    showToast("تم حذف الطالب وكافة بياناته بنجاح.");
+                    renderAdminDashboard();
+                }
+            });
+        }
+
+        // ==================== Managing Calendar Days Render ====================
+        function autoFillAbsentsForToday() {
             const todayStr = new Date().toISOString().split('T')[0];
             
-            for (const st of ringStudents) {
-                const att = document.getElementById(`att-${st.id}`).value;
-                const surah = document.getElementById(`surah-${st.id}`).value.trim();
-                const from = parseInt(document.getElementById(`from-${st.id}`).value) || 0;
-                const to = parseInt(document.getElementById(`to-${st.id}`).value) || 0;
-                const beh = parseInt(document.getElementById(`beh-${st.id}`).value) || 0;
-                const part = parseInt(document.getElementById(`part-${st.id}`).value) || 0;
-                const hw = document.getElementById(`hw-${st.id}`).value.trim();
-                const notes = document.getElementById(`notes-${st.id}`).value.trim();
-                
-                try {
-                    const response = await fetch(`${API_URL}/api/teacher/save-daily-log`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            studentId: st.id,
-                            date: todayStr,
-                            attendance: att,
-                            surah,
-                            pageFrom: from,
-                            pageTo: to,
-                            behavior: beh,
-                            participation: part,
-                            homework: hw,
-                            notes
-                        })
+            state.students.forEach(student => {
+                const hasLog = state.logs.some(l => l.studentId === student.id && l.date === todayStr);
+                if (!hasLog) {
+                    // Automatically add Absent log to indicate student missed today's QR check-in
+                    state.logs.push({
+                        id: `l-auto-${Date.now()}-${student.id}`,
+                        studentId: student.id,
+                        date: todayStr,
+                        attendance: "absent",
+                        surah: "",
+                        pageFrom: 0,
+                        pageTo: 0,
+                        behavior: 0,
+                        participation: 0,
+                        homework: "مراجعة اللوح والأحكام",
+                        notes: "غائب لعدم مسح بطاقة الـ QR الخاصة به عند الحضور اليوم."
                     });
-                    
-                    if (!response.ok) throw new Error('فشل حفظ السجل');
-                } catch (error) {
-                    console.error('خطأ:', error);
-                    showToast('فشل حفظ السجل', 'error');
-                    return;
                 }
+            });
+            saveState();
+        }
+
+        function renderCalendar() {
+            if (!activeUser) return;
+            
+            const label = document.getElementById("calendar-month-year-label");
+            const months = ["كانون الثاني", "شباط", "آذار", "نيسان", "أيار", "حزيران", "تموز", "آب", "أيلول", "تشرين الأول", "تشرين الثاني", "كانون الأول"];
+            label.innerText = `${months[calendarDate.getMonth()]} ${calendarDate.getFullYear()}`;
+
+            const grid = document.getElementById("calendar-days-grid");
+            grid.innerHTML = "";
+
+            const firstDayIndex = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1).getDay();
+            const totalDays = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 0).getDate();
+
+            // Padding for previous month layout offsets
+            for (let i = 0; i < firstDayIndex; i++) {
+                grid.innerHTML += `<div class="p-3"></div>`;
             }
-            
-            await loadDB();
-            renderTeacherRing();
-            showToast('تم حفظ السجل اليومي بنجاح!');
+
+            // Populate Calendar Days
+            for (let day = 1; day <= totalDays; day++) {
+                const dayStr = `${calendarDate.getFullYear()}-${String(calendarDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isSelected = day === calendarDate.getDate();
+                const hasEvaluations = state.logs.some(l => l.date === dayStr && l.attendance !== "absent");
+
+                let bgClass = "bg-mosque-950/60 border border-emerald-950/20";
+                if (isSelected) {
+                    bgClass = "bg-gold text-mosque-950 shadow-md shadow-gold/20 border border-gold font-bold";
+                } else if (hasEvaluations) {
+                    bgClass = "bg-emerald-900 border border-gold/30 text-gold-light font-bold";
+                }
+
+                grid.innerHTML += `
+                    <button onclick="selectCalendarDay(${day})" class="p-3 text-center rounded-lg cursor-pointer ${bgClass} hover:border-gold text-xs transition-all">
+                        ${day}
+                    </button>
+                `;
+            }
+
+            renderLogEditor();
         }
 
-        // ==================== ADMIN PANEL ====================
-        function renderAdminPanel() {
-            loadAdminRings();
-            loadAdminAccounts();
-            loadAdminSettingsForm();
+        function navigateMonth(direction) {
+            calendarDate.setMonth(calendarDate.getMonth() + direction);
+            calendarDate.setDate(1); 
+            renderCalendar();
         }
 
-        function setAdminSub(subId) {
-            document.getElementById('admin-sub-rings').classList.add('hidden');
-            document.getElementById('admin-sub-accounts').classList.add('hidden');
-            document.getElementById('admin-sub-settings').classList.add('hidden');
-            
-            document.querySelectorAll('.admin-sub-btn').forEach(b => {
-                b.className = 'admin-sub-btn text-emerald-300 px-4 py-2 rounded text-xs font-bold flex items-center gap-2';
-            });
-            
-            document.getElementById('admin-sub-' + subId).classList.remove('hidden');
-            document.getElementById('sub-btn-' + subId).className = 'admin-sub-btn bg-gold/10 text-gold-light px-4 py-2 rounded text-xs font-bold flex items-center gap-2';
+        function selectCalendarDay(day) {
+            calendarDate.setDate(day);
+            renderCalendar();
         }
 
-        function loadAdminRings() {
-            const selectTeacher = document.getElementById('admin-ring-teacher');
-            selectTeacher.innerHTML = '';
-            
-            const teachers = db.users.filter(u => u.role === 'teacher');
-            teachers.forEach(t => {
-                const opt = document.createElement('option');
-                opt.value = t.id;
-                opt.textContent = t.displayName;
-                selectTeacher.appendChild(opt);
-            });
-            
-            let html = '';
-            db.rings.forEach(ring => {
-                const teacher = db.users.find(u => u.id === ring.teacherId);
-                const studentCount = db.students.filter(s => s.ringId === ring.id).length;
-                
-                html += `
-                    <div class="bg-mosque-950 p-3 rounded border border-gold/10 flex justify-between items-center">
-                        <div>
-                            <p class="font-bold text-gold-light text-sm">${ring.name}</p>
-                            <p class="text-xs text-emerald-400">${teacher?.displayName || 'بدون معلم'} • ${studentCount} طالب</p>
+        // ==================== Handling Daily Student Evaluations ====================
+        function renderLogEditor() {
+            const dateStr = `${calendarDate.getFullYear()}-${String(calendarDate.getMonth() + 1).padStart(2, '0')}-${String(calendarDate.getDate()).padStart(2, '0')}`;
+            document.getElementById("log-editor-date-title").innerText = `تقييم الطلاب ليوم: ${dateStr}`;
+
+            const panel = document.getElementById("log-editor-panel-contents");
+            panel.innerHTML = "";
+
+            // Determine students assigned to this teacher
+            let ringStudents = [];
+            if (activeUser.role === "admin") {
+                ringStudents = state.students;
+            } else {
+                ringStudents = state.students.filter(s => s.teacherId === activeUser.id);
+            }
+
+            if (ringStudents.length === 0) {
+                panel.innerHTML = `<p class="text-xs text-amber-400 text-center py-6">لا يوجد طلاب مسجلون بحلقتك حالياً لإجراء تقييمهم.</p>`;
+                return;
+            }
+
+            ringStudents.forEach(st => {
+                const log = state.logs.find(l => l.studentId === st.id && l.date === dateStr) || {
+                    attendance: "absent",
+                    surah: "",
+                    pageFrom: "",
+                    pageTo: "",
+                    behavior: 0,
+                    participation: 0,
+                    homework: "",
+                    notes: ""
+                };
+
+                const teacher = state.users.find(u => u.id === st.teacherId) || { displayName: "عام" };
+
+                panel.innerHTML += `
+                    <div class="bg-mosque-950 border border-gold/15 p-4 rounded-xl space-y-3">
+                        <div class="flex justify-between items-center border-b border-emerald-950/60 pb-1.5">
+                            <span class="font-bold text-white text-xs">${st.name}</span>
+                            <span class="text-[10px] text-emerald-500 font-bold">الأستاذ: ${teacher.displayName}</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-2 text-xs text-right">
+                            <div>
+                                <label class="text-[10px] text-emerald-400 block mb-0.5">الحضور اليومي:</label>
+                                <select id="att-${st.id}" class="w-full bg-mosque-900 border border-gold/15 rounded p-1 text-[11px] text-white">
+                                    <option value="early" ${log.attendance === 'early' ? 'selected' : ''}>🌱 حضور باكر (+${state.settings.early})</option>
+                                    <option value="regular" ${log.attendance === 'regular' ? 'selected' : ''}>✓ حضور عادي (+${state.settings.regular})</option>
+                                    <option value="late" ${log.attendance === 'late' ? 'selected' : ''}>⏰ حضور متأخر (+${state.settings.late})</option>
+                                    <option value="absent" ${log.attendance === 'absent' ? 'selected' : ''}>✗ غائب (0)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-emerald-400 block mb-0.5">السورة المحفوظة:</label>
+                                <input type="text" id="surah-${st.id}" value="${log.surah}" placeholder="مثال: الفلق" class="w-full bg-mosque-900 border border-gold/15 rounded p-1 text-[11px] text-white">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                                <label class="text-[10px] text-emerald-400 block mb-0.5">من صفحة:</label>
+                                <input type="number" id="from-${st.id}" value="${log.pageFrom}" placeholder="من" class="w-full bg-mosque-900 border border-gold/15 rounded p-1 text-[11px] text-white">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-emerald-400 block mb-0.5">إلى صفحة:</label>
+                                <input type="number" id="to-${st.id}" value="${log.pageTo}" placeholder="إلى" class="w-full bg-mosque-900 border border-gold/15 rounded p-1 text-[11px] text-white">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                                <label class="text-[10px] text-emerald-400 block mb-0.5">نقاط السلوك والتجاوب:</label>
+                                <input type="number" id="beh-${st.id}" value="${log.behavior}" class="w-full bg-mosque-900 border border-gold/15 rounded p-1 text-[11px] text-white">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-emerald-400 block mb-0.5">نقاط التسميع والمشاركة:</label>
+                                <input type="number" id="part-${st.id}" value="${log.participation}" class="w-full bg-mosque-900 border border-gold/15 rounded p-1 text-[11px] text-white">
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5 text-xs">
+                            <input type="text" id="hw-${st.id}" value="${log.homework}" placeholder="الواجب القادم..." class="w-full bg-mosque-900 border border-gold/15 rounded p-1 text-[11px] text-white">
+                            <input type="text" id="notes-${st.id}" value="${log.notes}" placeholder="ملاحظات وتوجيهات الأستاذ..." class="w-full bg-mosque-900 border border-gold/15 rounded p-1 text-[11px] text-white">
+                        </div>
+
+                        <div class="flex gap-1.5">
+                            <button onclick="saveSingleLog('${st.id}')" class="flex-grow bg-gold/15 hover:bg-gold text-gold-light hover:text-mosque-950 font-bold py-1.5 rounded-lg text-[11px] transition-all">حفظ تقييم ${st.name}</button>
+                            <button onclick="shareWhatsAppReport('${st.id}')" class="bg-emerald-900 hover:bg-emerald-850 text-white px-3 rounded-lg text-xs" title="إرسال عبر الواتساب للأهل">
+                                <i class="fab fa-whatsapp"></i>
+                            </button>
                         </div>
                     </div>
                 `;
             });
-            
-            document.getElementById('admin-rings-list').innerHTML = html;
         }
 
-        function loadAdminAccounts() {
-            const selectRing = document.getElementById('admin-s-ring');
-            selectRing.innerHTML = '';
+        function saveSingleLog(studentId) {
+            const dateStr = `${calendarDate.getFullYear()}-${String(calendarDate.getMonth() + 1).padStart(2, '0')}-${String(calendarDate.getDate()).padStart(2, '0')}`;
             
-            db.rings.forEach(ring => {
-                const opt = document.createElement('option');
-                opt.value = ring.id;
-                opt.textContent = ring.name;
-                selectRing.appendChild(opt);
-            });
+            const att = document.getElementById(`att-${studentId}`).value;
+            const surah = document.getElementById(`surah-${studentId}`).value.trim();
+            const from = parseInt(document.getElementById(`from-${studentId}`).value) || 0;
+            const to = parseInt(document.getElementById(`to-${studentId}`).value) || 0;
+            const beh = parseInt(document.getElementById(`beh-${studentId}`).value) || 0;
+            const part = parseInt(document.getElementById(`part-${studentId}`).value) || 0;
+            const hw = document.getElementById(`hw-${studentId}`).value.trim();
+            const notes = document.getElementById(`notes-${studentId}`).value.trim();
+
+            const existingIndex = state.logs.findIndex(l => l.studentId === studentId && l.date === dateStr);
             
-            let html = '';
-            db.students.forEach(student => {
-                const ring = db.rings.find(r => r.id === student.ringId);
+            const newLog = {
+                id: `l-${Date.now()}`,
+                studentId,
+                date: dateStr,
+                attendance: att,
+                surah,
+                pageFrom: from,
+                pageTo: to,
+                behavior: beh,
+                participation: part,
+                homework: hw,
+                notes
+            };
+
+            if (existingIndex > -1) {
+                state.logs[existingIndex] = newLog;
+            } else {
+                state.logs.push(newLog);
+            }
+
+            // Recalculate Student total points
+            recalculatePoints(studentId);
+
+            saveState();
+            showToast("تم حفظ تقييم الطالب ومزامنة الروزنامة والنقاط الفردية!");
+            renderCalendar();
+        }
+
+        function recalculatePoints(studentId) {
+            const student = state.students.find(s => s.id === studentId);
+            if (student) {
+                const logsForSt = state.logs.filter(l => l.studentId === studentId);
                 
-                html += `
-                    <div class="bg-mosque-950 p-3 rounded border border-gold/10 flex justify-between items-center">
-                        <div>
-                            <p class="font-bold text-gold-light text-sm">${student.name}</p>
-                            <p class="text-xs text-emerald-400">${ring?.name || 'بدون حلقة'} • ${student.points} نقطة</p>
-                        </div>
-                        <button onclick="adminDeleteStudent('${student.id}')" class="text-red-400 hover:text-red-300 text-xs font-bold">حذف</button>
-                    </div>
+                let totalPoints = 0;
+                logsForSt.forEach(lg => {
+                    const attPts = state.settings[lg.attendance] || 0;
+                    totalPoints += attPts + lg.behavior + lg.participation;
+                });
+                student.points = totalPoints;
+
+                const totalLogs = logsForSt.length;
+                const presents = logsForSt.filter(lg => lg.attendance !== 'absent').length;
+                student.attendanceRate = totalLogs > 0 ? Math.round((presents / totalLogs) * 100) : 100;
+            }
+        }
+
+        // ==================== Quick Scanner & QR simulator calculation ====================
+        function loadQRScannerView() {
+            if (!activeUser) return;
+            
+            const selectSim = document.getElementById("qr-sim-student-id");
+            selectSim.innerHTML = "";
+            
+            let targetStudents = state.students;
+            if (activeUser.role !== "admin") {
+                targetStudents = state.students.filter(s => s.teacherId === activeUser.id);
+            }
+
+            targetStudents.forEach(st => {
+                selectSim.innerHTML += `<option value="${st.id}">${st.name}</option>`;
+            });
+        }
+
+        function startAdminQRScanner() {
+            html5QrScanner = new Html5Qrcode("admin-qr-reader");
+            const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+                stopAdminQRScanner();
+                processScannedQR(decodedText);
+            };
+            const config = { fps: 10, qrbox: { width: 200, height: 200 } };
+            html5QrScanner.start({ facingMode: "environment" }, config, qrCodeSuccessCallback)
+                .then(() => {
+                    isAdminScanning = true;
+                })
+                .catch(err => {
+                    showToast("يرجى منح صلاحيات الكاميرا لتحضير الطلاب عبر الـ QR", "error");
+                });
+        }
+
+        function stopAdminQRScanner() {
+            if (html5QrScanner && isAdminScanning) {
+                html5QrScanner.stop().then(() => {
+                    isAdminScanning = false;
+                }).catch(() => {
+                    isAdminScanning = false;
+                });
+            }
+        }
+
+        function processScannedQR(studentId, overrideTime = null) {
+            const student = state.students.find(s => s.id === studentId);
+            if (!student) {
+                showToast("رمز الـ QR هذا غير مسجل في قاعدة بيانات الحلقات!", "error");
+                return;
+            }
+
+            let hours, minutes;
+            if (overrideTime) {
+                [hours, minutes] = overrideTime.split(":").map(Number);
+            } else {
+                const now = new Date();
+                hours = now.getHours();
+                minutes = now.getMinutes();
+            }
+
+            const totalMinutes = hours * 60 + minutes;
+
+            // Apply strict time rules based on request:
+            // - Before 5:00 PM: Early ("حضور باكر") -> 30 Points
+            // - 5:00 PM to 6:00 PM: Regular ("حضور عادي") -> 15 Points
+            // - After 6:00 PM: Late ("حضور متأخر") -> 5 Points
+            let attendanceStatus = "late";
+            let statusLabel = "حضور متأخر";
+            
+            if (totalMinutes < 17 * 60) { // Before 5:00 PM (17:00)
+                attendanceStatus = "early";
+                statusLabel = "حضور باكر";
+            } else if (totalMinutes <= 18 * 60) { // Between 5:00 PM and 6:00 PM (18:00)
+                attendanceStatus = "regular";
+                statusLabel = "حضور عادي";
+            }
+
+            const todayStr = new Date().toISOString().split('T')[0];
+            const existingIndex = state.logs.findIndex(l => l.studentId === studentId && l.date === todayStr);
+
+            const newLog = {
+                id: `l-qr-${Date.now()}`,
+                studentId,
+                date: todayStr,
+                attendance: attendanceStatus,
+                surah: "تسميع اللقاء",  // Default starting label
+                pageFrom: 1,
+                pageTo: 1,
+                behavior: 15,    // Base daily points
+                participation: 15,
+                homework: "مراجعة اللوح والأحكام",
+                notes: `تم رصد حضور الطالب الفعلي عبر مسح بطاقة الـ QR بنجاح في تمام الساعة ${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}.`
+            };
+
+            if (existingIndex > -1) {
+                state.logs[existingIndex].attendance = attendanceStatus;
+                state.logs[existingIndex].notes = `تمت إعادة الفحص والتأكيد بالـ QR في تمام الساعة ${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}.`;
+            } else {
+                state.logs.push(newLog);
+            }
+
+            recalculatePoints(studentId);
+            saveState();
+            soundEngine.playBeep();
+            
+            showToast(`تم مسح البطاقة! الطالب: ${student.name} • الحالة: ${statusLabel}`);
+            
+            if (activeTab === "calendar") {
+                renderCalendar();
+            }
+        }
+
+        function simulateQRScan() {
+            const studentId = document.getElementById("qr-sim-student-id").value;
+            const timeSlot = document.getElementById("qr-sim-time-slot").value;
+
+            if (!studentId) {
+                showToast("لا يوجد طلاب مسجلون لإجراء الفحص والمحاكاة!", "error");
+                return;
+            }
+
+            processScannedQR(studentId, timeSlot);
+        }
+
+        // ==================== Displaying Parent & Student Portal Cards ====================
+        function renderStudentPortal() {
+            if (!activeUser) return;
+            
+            // Find current logged-in student user
+            const student = state.students.find(s => s.userId === activeUser.id);
+            if (!student) {
+                showToast("خطأ: تعذر العثور على بطاقة الطالب الفردية المرتبطة بهذا الحساب!", "error");
+                return;
+            }
+
+            const teacher = state.users.find(u => u.id === student.teacherId) || { displayName: "غير مخصص" };
+
+            // Fetch logs for this student
+            const studentLogs = state.logs.filter(l => l.studentId === student.id).sort((a,b) => new Date(b.date) - new Date(a.date));
+            const lastLog = studentLogs[0] || {
+                attendance: "absent",
+                surah: "--",
+                pageFrom: "--",
+                pageTo: "--",
+                behavior: 0,
+                participation: 0,
+                homework: "لا يوجد واجب محدد بعد",
+                notes: "لا توجد توجيهات مسجلة بعد"
+            };
+
+            // Bind values to parent follow-up card
+            document.getElementById("parent-card-points").innerText = student.points;
+            document.getElementById("parent-card-student-name").innerText = student.name;
+            document.getElementById("parent-card-ring-name").innerText = `الأستاذ المشرف: ${teacher.displayName}`;
+
+            let attText = "غائب";
+            if (lastLog.attendance === "early") attText = "🌿 حضور باكر";
+            else if (lastLog.attendance === "regular") attText = "حضور عادي";
+            else if (lastLog.attendance === "late") attText = "حضور متأخر";
+
+            document.getElementById("parent-card-attendance").innerText = attText;
+            document.getElementById("parent-card-surah").innerText = lastLog.surah || "--";
+            
+            if (lastLog.pageFrom !== "--" && lastLog.pageFrom !== 0) {
+                document.getElementById("parent-card-pages").innerText = `من صفحة ${lastLog.pageFrom} إلى ${lastLog.pageTo}`;
+            } else {
+                document.getElementById("parent-card-pages").innerText = "لم يتم القراءة اليوم";
+            }
+            
+            document.getElementById("parent-card-extra-points").innerText = `+${(lastLog.behavior || 0) + (lastLog.participation || 0)} ن`;
+            document.getElementById("parent-card-homework").innerText = lastLog.homework || "مراجعة اللوح والأحكام";
+            document.getElementById("parent-card-notes").innerText = `"${lastLog.notes || 'لا يوجد ملاحظات مسجلة اليوم'}"`;
+
+            // Display QR code link and unique token ID
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${student.id}`;
+            document.getElementById("student-personal-qr-element").innerHTML = `<img src="${qrUrl}" alt="QR Code" class="w-32 h-32">`;
+            document.getElementById("student-personal-token").innerText = `رمز الدخول: ${student.id}`;
+
+            // Load student history list
+            const logsBody = document.getElementById("student-evaluation-logs-body");
+            logsBody.innerHTML = "";
+
+            if (studentLogs.length === 0) {
+                logsBody.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-emerald-600 font-bold">لا يوجد تقييمات سابقة مسجلة في الروزنامة بعد.</td></tr>`;
+                return;
+            }
+
+            studentLogs.forEach(lg => {
+                let statusLabel = "غائب";
+                if (lg.attendance === "early") statusLabel = "🌱 حضور باكر";
+                else if (lg.attendance === "regular") statusLabel = "حضور عادي";
+                else if (lg.attendance === "late") statusLabel = "⏰ متأخر";
+
+                logsBody.innerHTML += `
+                    <tr class="hover:bg-mosque-800/10 border-b border-emerald-950/20">
+                        <td class="p-3 font-mono text-[11px]">${lg.date}</td>
+                        <td class="p-3 text-emerald-400 font-bold">${statusLabel}</td>
+                        <td class="p-3 text-xs">
+                            ${lg.surah ? `سورة ${lg.surah} (ص ${lg.pageFrom} - ${lg.pageTo})` : 'لم يسمع اليوم'}
+                        </td>
+                        <td class="p-3 text-center font-bold text-gold-light">
+                            +${lg.behavior + lg.participation} ن
+                        </td>
+                        <td class="p-3 text-xs text-emerald-300">
+                            <p>${lg.notes || 'لا يوجد ملاحظات'}</p>
+                            ${lg.homework ? `<p class="text-[10px] text-gold-light mt-0.5"><strong>الواجب:</strong> ${lg.homework}</p>` : ''}
+                        </td>
+                    </tr>
                 `;
             });
-            
-            document.getElementById('admin-students-list').innerHTML = html;
         }
 
-        function loadAdminSettingsForm() {
-            document.getElementById('cfg-early').value = db.settings.early;
-            document.getElementById('cfg-regular').value = db.settings.regular;
-            document.getElementById('cfg-late').value = db.settings.late;
-            document.getElementById('cfg-absent').value = db.settings.absent;
+        // ==================== JSON Data Export & Imports ====================
+        // Simple manual backup to preserve database files locally
+        function exportJSONBackup() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", `جامع_الكوثر_تصدير_النقاط_${new Date().toISOString().split('T')[0]}.json`);
+            dlAnchorElem.click();
+            showToast("تم تصدير النسخة الاحتياطية بنجاح!");
         }
 
-        async function adminAddRing(event) {
-            event.preventDefault();
-            const ringName = document.getElementById('admin-ring-name').value;
-            
-            if (!ringName.trim()) {
-                showToast('يرجى إدخال اسم الحلقة', 'error');
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_URL}/api/admin/add-ring`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ringName })
-                });
-                
-                if (!response.ok) throw new Error('فشل إضافة الحلقة');
-                
-                await loadDB();
-                loadAdminRings();
-                document.getElementById('admin-ring-name').value = '';
-                showToast('تم إضافة الحلقة بنجاح!');
-            } catch (error) {
-                console.error('خطأ:', error);
-                showToast('فشل إضافة الحلقة', 'error');
-            }
-        }
+        function importJSONBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
-        async function adminAddStudent(event) {
-            event.preventDefault();
-            const studentName = document.getElementById('admin-s-name').value;
-            const username = document.getElementById('admin-s-username').value;
-            const password = document.getElementById('admin-s-password').value;
-            const ringId = document.getElementById('admin-s-ring').value;
-            
-            if (!studentName.trim() || !username.trim() || !password.trim() || !ringId) {
-                showToast('يرجى ملء جميع الحقول المطلوبة', 'error');
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_URL}/api/admin/add-student`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ studentName, username, password, ringId })
-                });
-                
-                if (!response.ok) throw new Error('فشل إضافة الطالب');
-                
-                const result = await response.json();
-                await loadDB();
-                loadAdminAccounts();
-                
-                document.getElementById('admin-s-name').value = '';
-                document.getElementById('admin-s-username').value = '';
-                document.getElementById('admin-s-password').value = '';
-                
-                showToast(result.message || 'تم تسجيل الطالب بنجاح!');
-            } catch (error) {
-                console.error('خطأ:', error);
-                showToast('فشل إضافة الطالب', 'error');
-            }
-        }
-
-        async function adminAddTeacher(event) {
-            event.preventDefault();
-            const teacherName = document.getElementById('admin-t-name').value;
-            const username = document.getElementById('admin-t-username').value;
-            const password = document.getElementById('admin-t-password').value;
-            
-            try {
-                const response = await fetch(`${API_URL}/api/admin/add-teacher`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ teacherName, username, password })
-                });
-                
-                if (!response.ok) throw new Error('فشل إضافة المعلم');
-                
-                const result = await response.json();
-                await loadDB();
-                loadAdminAccounts();
-                
-                document.getElementById('admin-t-name').value = '';
-                document.getElementById('admin-t-username').value = '';
-                document.getElementById('admin-t-password').value = '';
-                
-                showToast(result.message || 'تم إضافة المعلم بنجاح!');
-            } catch (error) {
-                console.error('خطأ:', error);
-                showToast('فشل إضافة المعلم', 'error');
-            }
-        }
-
-        async function adminTransferStudent(studentId, newRingId) {
-            try {
-                const response = await fetch(`${API_URL}/api/admin/transfer-student`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ studentId, newRingId })
-                });
-                
-                if (!response.ok) throw new Error('فشل نقل الطالب');
-                
-                const result = await response.json();
-                await loadDB();
-                loadAdminAccounts();
-                showToast(result.message);
-            } catch (error) {
-                console.error('خطأ:', error);
-                showToast('فشل نقل الطالب', 'error');
-            }
-        }
-
-        async function adminDeleteStudent(studentId) {
-            showConfirm('هل أنت متأكد من حذف هذا الطالب؟', async () => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
                 try {
-                    const response = await fetch(`${API_URL}/api/admin/student/${studentId}`, {
-                        method: 'DELETE'
-                    });
-                    
-                    if (!response.ok) throw new Error('فشل حذف الطالب');
-                    
-                    await loadDB();
-                    loadAdminAccounts();
-                    showToast('تم حذف الطالب بنجاح!');
-                } catch (error) {
-                    console.error('خطأ:', error);
-                    showToast('فشل حذف الطالب', 'error');
-                }
-            });
-        }
-
-        async function adminSaveSystemSettings(event) {
-            event.preventDefault();
-            
-            try {
-                const response = await fetch(`${API_URL}/api/admin/settings`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        early: parseInt(document.getElementById('cfg-early').value),
-                        regular: parseInt(document.getElementById('cfg-regular').value),
-                        late: parseInt(document.getElementById('cfg-late').value),
-                        absent: parseInt(document.getElementById('cfg-absent').value)
-                    })
-                });
-                
-                if (!response.ok) throw new Error('فشل حفظ الإعدادات');
-                
-                await loadDB();
-                showToast('تم حفظ الإعدادات بنجاح!');
-            } catch (error) {
-                console.error('خطأ:', error);
-                showToast('فشل حفظ الإعدادات', 'error');
-            }
-        }
-
-        // ==================== EXPORT ====================
-        async function exportJSONBackup() {
-            try {
-                const response = await fetch(`${API_URL}/api/backup`);
-                if (!response.ok) throw new Error('فشل تصدير النسخة الاحتياطية');
-                
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `alkauthar_backup_${new Date().toISOString().split('T')[0]}.json`;
-                a.click();
-                window.URL.revokeObjectURL(url);
-                
-                showToast('تم تصدير النسخة الاحتياطية بنجاح!');
-            } catch (error) {
-                console.error('خطأ:', error);
-                showToast('فشل تصدير النسخة الاحتياطية', 'error');
-            }
-        }
-
-        // ==================== ADMIN TABS ====================
-        document.addEventListener('DOMContentLoaded', () => {
-            const adminTabs = document.getElementById('admin-tabs');
-            if (adminTabs) {
-                adminTabs.addEventListener('click', (e) => {
-                    const btn = e.target.closest('.admin-sub-btn');
-                    if (btn) {
-                        const subId = btn.id.replace('sub-btn-', '');
-                        setAdminSub(subId);
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed.users && parsed.students && parsed.logs) {
+                        state = parsed;
+                        // Confirm admin safety
+                        if (!state.users.some(u => u.username === "admin")) {
+                            state.users.push({ id: "u-admin", username: "admin", password: "admin123", role: "admin", displayName: "فضيلة الشيخ عبد الفتاح حجازي" });
+                        }
+                        saveState();
+                        showToast("تم استيراد قاعدة البيانات الاحتياطية بنجاح واستعادة كافة النقاط والطلاب والأساتذة!");
+                        
+                        if (activeTab === "admin") renderAdminDashboard();
+                    } else {
+                        showToast("ملف النسخة الاحتياطية غير متوافق أو تالف!", "error");
                     }
-                });
+                } catch(err) {
+                    showToast("حدث خطأ أثناء قراءة ملف الـ JSON!", "error");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // ==================== Printable PDF Records ====================
+        function printAdminReports() {
+            if (state.students.length === 0) {
+                showToast("لا يوجد طلاب مسجلون لطباعة تقاريرهم حالياً!", "error");
+                return;
             }
-        });
+
+            // Generate report for the first student or selection
+            const student = state.students[0];
+            const teacher = state.users.find(u => u.id === student.teacherId) || { displayName: "عام" };
+
+            // Bind values
+            document.getElementById("pdf-student-name").innerText = student.name;
+            document.getElementById("pdf-student-ring").innerText = teacher.displayName;
+            document.getElementById("pdf-student-points").innerText = student.points;
+            document.getElementById("pdf-print-date").innerText = new Date().toLocaleDateString('ar-SY');
+
+            const pdfBody = document.getElementById("pdf-evaluation-logs-body");
+            pdfBody.innerHTML = "";
+
+            const studentLogs = state.logs.filter(l => l.studentId === student.id).sort((a,b) => new Date(b.date) - new Date(a.date));
+            studentLogs.forEach(lg => {
+                let statusLabel = "غائب";
+                if (lg.attendance === "early") statusLabel = "حضور باكر";
+                else if (lg.attendance === "regular") statusLabel = "حضور عادي";
+                else if (lg.attendance === "late") statusLabel = "متأخر";
+
+                pdfBody.innerHTML += `
+                    <tr>
+                        <td class="border border-gray-300 p-2">${lg.date}</td>
+                        <td class="border border-gray-300 p-2">${statusLabel}</td>
+                        <td class="border border-gray-300 p-2">${lg.surah ? `سورة ${lg.surah} (صفحة ${lg.pageFrom} إلى ${lg.pageTo})` : 'لم يسمع'}</td>
+                        <td class="border border-gray-300 p-2 text-center">${lg.behavior + lg.participation}</td>
+                        <td class="border border-gray-300 p-2">${lg.notes || 'مشارك متميز'}</td>
+                    </tr>
+                `;
+            });
+
+            window.print();
+        }
+
+        // ==================== Controlling Live Ticking Clocks ====================
+        function initTickingClocks() {
+            setInterval(() => {
+                const now = new Date();
+                
+                let hours = now.getHours();
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                const ampm = hours >= 12 ? 'م' : 'ص';
+                hours = hours % 12;
+                hours = hours ? hours : 12; 
+                
+                const timeString = `${String(hours).padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
+                const islamicDateStr = now.toLocaleDateString('ar-SY', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                
+                // Update Login widgets (Matches Photo 5814283866859048643_2.jpg)
+                document.getElementById("login-live-clock").innerText = timeString;
+                document.getElementById("login-arabic-date").innerText = islamicDateStr;
+
+                // Update Student dashboard clock
+                const clockEl = document.getElementById("std-board-live-clock");
+                if (clockEl) clockEl.innerText = timeString;
+
+                const dateEl = document.getElementById("std-board-islamic-date");
+                if (dateEl) dateEl.innerText = islamicDateStr;
+
+            }, 1000);
+        }
+
+        // ==================== APP BOOTSTRAPPING ====================
+        window.onload = function() {
+            loadState();
+            initTickingClocks();
+            showToast("مرحباً بكم في منظومة جامع الكوثر تحت إشراف فضيلة الشيخ عبد الفتاح حجازي");
+        };
     </script>
 </body>
 </html>
