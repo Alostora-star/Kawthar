@@ -13,7 +13,7 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.static(__dirname));
 
 // ==================== الاتصال بـ MONGODB ATLAS ====================
-// استبدل <db_password> بكلمة المرور الخاصة بقاعدة بياناتك
+// تأكد من استبدال كلمة <db_password> بكلمة المرور الحقيقية التي أنشأتها للمستخدم Shadow
 const mongoURI = "mongodb+srv://Shadow:<db_password>@kawthar.2iuwqn6.mongodb.net/KawtharDB?retryWrites=true&w=majority&appName=Kawthar";
 
 mongoose.connect(mongoURI, {
@@ -24,40 +24,42 @@ mongoose.connect(mongoURI, {
 .catch(err => console.error("❌ فشل الاتصال بقاعدة البيانات السحابية:", err));
 
 // ==================== بناء هيكل قاعدة البيانات (SCHEMA) ====================
-// نقوم بإنشاء مستند واحد يحتوي على كل البيانات ليتوافق تماماً مع منطق الـ JSON القديم
 const AppDataSchema = new mongoose.Schema({
   docId: { type: String, default: "main_database", unique: true },
   users: { type: Array, default: [
-    { id: "admin-1", username: "admin", password: "admin123", role: "admin", displayName: "المدير العام" }
+    { id: "u-admin", username: "admin", password: "admin123", role: "admin", displayName: "فضيلة الشيخ محمد عبد الفتاح حجازي" }
   ]},
   rings: { type: Array, default: [] },
   students: { type: Array, default: [] },
   logs: { type: Array, default: [] },
-  settings: { type: Object, default: { early: 5, regular: 3, late: 1, absent: 0 } },
+  settings: { type: Object, default: { early: 30, regular: 15, late: 5, absent: 0, pointsPerPage: 5 } },
   subscriptions: { type: Array, default: [] },
-  notifications: { type: Array, default: [] }
+  notifications: { type: Array, default: [] },
+  stories: { type: Array, default: [] },
+  activities: { type: Array, default: [] },
+  mosqueLogo: { type: String, default: null }
 }, { timestamps: true });
 
 const AppData = mongoose.model('AppData', AppDataSchema);
 
-// دالة مساعدة لضمان وجود مستند قاعدة البيانات الأساسي عند بدء التشغيل
+// دالة لتهيئة المستند الأساسي للمنظومة
 async function initializeDB() {
   try {
     let data = await AppData.findOne({ docId: "main_database" });
     if (!data) {
       data = new AppData();
       await data.save();
-      console.log("ℹ️ تم إنشاء مستند البيانات الافتراضي في السحاب بنجاح.");
+      console.log("ℹ️ تم إنشاء مستند البيانات الافتراضي بنجاح في السحاب.");
     }
   } catch (error) {
-    console.error("❌ خطأ أثناء فحص تهيئة قاعدة البيانات:", error);
+    console.error("❌ خطأ أثناء تهيئة قاعدة البيانات:", error);
   }
 }
 initializeDB();
 
-// ==================== الـ API ENDPOINTS (تحديثات السحاب) ====================
+// ==================== الـ API ENDPOINTS (مسارات التزامن) ====================
 
-// 1. جلب كامل البيانات للموقع (لوحة التحكم)
+// 1. جلب كامل بيانات المنظومة للواجهة (اللابتوب والموبايل معاً)
 app.get('/api/db', async (req, res) => {
   try {
     const db = await AppData.findOne({ docId: "main_database" });
@@ -67,10 +69,9 @@ app.get('/api/db', async (req, res) => {
   }
 });
 
-// 2. تحديث وحفظ كامل البيانات القادمة من لوحة التحكم
+// 2. تحديث وحفظ البيانات القادمة من لوحة تحكم أي جهاز
 app.post('/api/db', async (req, res) => {
   try {
-    // نقوم بتحديث المستند الرئيسي في السحاب ببيانات الجسم القادمة من المتصفح
     const updatedData = await AppData.findOneAndUpdate(
       { docId: "main_database" },
       { 
@@ -81,77 +82,37 @@ app.post('/api/db', async (req, res) => {
           logs: req.body.logs,
           settings: req.body.settings,
           subscriptions: req.body.subscriptions,
-          notifications: req.body.notifications
+          notifications: req.body.notifications,
+          stories: req.body.stories,
+          activities: req.body.activities,
+          mosqueLogo: req.body.mosqueLogo
         }
       },
       { new: true, upsert: true }
     );
     res.json({ success: true, message: "تم حفظ البيانات في السحاب بنجاح" });
   } catch (error) {
-    console.error(error);
+    console.error("❌ خطأ حفظ البيانات:", error);
     res.status(500).json({ error: "فشل حفظ البيانات في السحاب" });
   }
 });
 
-// 3. جلب الإحصائيات المخصصة لواجهة الطلاب وأولياء الأمور
+// 3. جلب الإحصائيات والمتصدرين
 app.get('/api/stats', async (req, res) => {
   try {
     const db = await AppData.findOne({ docId: "main_database" });
     if (!db) return res.status(500).json({ error: "قاعدة البيانات فارغة" });
 
-    // حساب أفضل الطلاب بناء على النقاط
     const leaderboard = [...db.students]
       .sort((a, b) => (b.points || 0) - (a.points || 0))
-      .slice(0, 10)
-      .map(s => ({ name: s.name, points: s.points, ring: s.ring }));
-
-    // حساب معدلات الحلقات
-    const ringStats = {};
-    db.rings.forEach(r => { ringStats[r.name] = { totalPoints: 0, studentCount: 0 }; });
-
-    db.students.forEach(s => {
-      if (ringStats[s.ring]) {
-        ringStats[s.ring].totalPoints += (s.points || 0);
-        ringStats[s.ring].studentCount += 1;
-      }
-    });
-
-    const ringAverages = Object.keys(ringStats).map(name => {
-      const { totalPoints, studentCount } = ringStats[name];
-      return {
-        name,
-        average: studentCount > 0 ? parseFloat((totalPoints / studentCount).toFixed(1)) : 0
-      };
-    }).sort((a, b) => b.average - a.average);
+      .slice(0, 10);
 
     res.json({
-      totalStudents: db.students.length,
-      totalRings: db.rings.length,
       leaderboard,
-      ringAverages: ringAverages.slice(0, 10)
+      totalStudents: db.students.length
     });
   } catch (error) {
-    res.status(500).json({ error: "فشل جلب الإحصائيات من السحاب" });
-  }
-});
-
-// 4. إرسال وتلقي إشعارات أولياء الأمور وحفظ الاشتراكات في السحاب
-app.post('/api/notifications/subscribe', async (req, res) => {
-  const { parentId, subscription } = req.body;
-  try {
-    const db = await AppData.findOne({ docId: "main_database" });
-    if (!db) return res.status(500).json({ error: "فشل الاتصال بقاعدة البيانات" });
-
-    const exists = db.subscriptions.find(sub => sub.parentId === parentId);
-    if (!exists) {
-      await AppData.updateOne(
-        { docId: "main_database" },
-        { $push: { subscriptions: { parentId, subscription } } }
-      );
-    }
-    res.json({ success: true, message: "تم الاشتراك في الإشعارات بنجاح" });
-  } catch (error) {
-    res.status(500).json({ error: "حدث خطأ أثناء حفظ الاشتراك" });
+    res.status(500).json({ error: "فشل جلب الإحصائيات" });
   }
 });
 
@@ -166,12 +127,12 @@ function keepAlive() {
       }).on('error', (err) => {
         console.log(`⚠️ Keep-Alive error: ${err.message}`);
       });
-    }, 5 * 60 * 1000); // كل 5 دقائق
+    }, 14 * 60 * 1000); 
   }
 }
 
-// تشغيل السيرفر والاستماع للطلبات
+// تشغيل السيرفر
 app.listen(PORT, () => {
-  console.log(`🚀 السيرفر يعمل الآن على المنفذ: ${PORT}`);
+  console.log(`🚀 السيرفر يعمل الآن بنجاح على المنفذ: ${PORT}`);
   keepAlive();
 });
