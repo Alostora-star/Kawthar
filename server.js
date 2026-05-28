@@ -14,7 +14,7 @@ app.use(express.static(__dirname));
 
 // ==================== الاتصال بـ MONGODB ATLAS ====================
 // تأكد من استبدال كلمة <db_password> بكلمة المرور الحقيقية التي أنشأتها للمستخدم Shadow
-const mongoURI = "mongodb+srv://Shadow:<db_password>@kawthar.2iuwqn6.mongodb.net/KawtharDB?retryWrites=true&w=majority&appName=Kawthar";
+const mongoURI = "mongodb+srv://Shadow:<Shadow@123>@kawthar.2iuwqn6.mongodb.net/KawtharDB?retryWrites=true&w=majority&appName=Kawthar";
 
 mongoose.connect(mongoURI, {
   useNewUrlParser: true,
