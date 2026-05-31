@@ -7,7 +7,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts (Tajawal & Amiri) -->
-    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght=0,400;0,700;1,400&family=Tajawal:wght=300;400;500;700;900&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- HTML5 QR Code library for scanning -->
@@ -65,6 +65,15 @@
                 display: block !important;
                 color: black !important;
             }
+            /* Isolation styling for printable ID card */
+            #printable-id-card-frame {
+                border: 4px solid #A3843E !important;
+                background-color: #03120E !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                margin: auto !important;
+            }
         }
         .story-ring {
             background: linear-gradient(45deg, #A3843E, #C5A85C, #E6D39D);
@@ -83,6 +92,59 @@
         <div class="flex-grow">
             <p class="text-xs text-emerald-300 font-bold" id="toast-title">تنبيه المنظومة</p>
             <p class="text-xs text-white mt-0.5" id="toast-message">جاري تنفيذ الإجراء...</p>
+        </div>
+    </div>
+
+    <!-- PREMIUM PRINTABLE ID CARD MODAL -->
+    <div id="id-card-print-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-4 hidden opacity-0 transition-all duration-300 no-print">
+        <div class="absolute top-5 left-5 flex gap-2">
+            <button onclick="window.print()" class="bg-gold hover:bg-gold-dark text-mosque-950 font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-lg shadow-gold/20">
+                <i class="fas fa-print"></i> طباعة البطاقة فوراً
+            </button>
+            <button onclick="toggleIDCardModal(false)" class="bg-red-950 hover:bg-red-900 text-red-200 border border-red-500/20 font-bold px-4 py-2 rounded-xl text-xs">
+                إغلاق
+            </button>
+        </div>
+
+        <!-- Professional ID Card Layout (Replicating high quality PVC card) -->
+        <div class="w-[320px] h-[500px] bg-gradient-to-b from-mosque-950 to-mosque-900 rounded-[2rem] border-4 border-gold p-6 relative overflow-hidden shadow-2xl flex flex-col justify-between text-center select-none" id="printable-id-card-frame">
+            <!-- Semi-transparent Mosque Background overlay inside card -->
+            <div class="absolute inset-0 z-0 pointer-events-none opacity-[0.08] bg-cover bg-center" id="id-card-mosque-bg" style="background-image: url('5814283866859048641_5.jpg');"></div>
+            
+            <div class="relative z-10 space-y-4">
+                <!-- Header -->
+                <div class="flex justify-between items-center border-b border-gold/25 pb-2.5">
+                    <img src="5814283866859048641_5.jpg" class="mosque-logo-img w-10 h-10 rounded-full border border-gold" alt="شعار">
+                    <div class="text-right">
+                        <h5 class="font-serif text-[11px] font-bold text-gold-light leading-tight">مسجد الكوثر بالمزة</h5>
+                        <p class="text-[8px] text-emerald-400 font-bold leading-tight">منظومة الحلقات القرآنية</p>
+                    </div>
+                </div>
+
+                <!-- Teacher Name (Crucial position at Top) -->
+                <div class="bg-gold/10 border border-gold/30 rounded-xl py-1.5 px-3">
+                    <span class="text-[8px] text-emerald-400 font-bold block mb-0.5">المشرف الرئيسي للحلقة</span>
+                    <span class="font-serif text-xs font-bold text-white" id="id-card-teacher-name">الأستاذ: --</span>
+                </div>
+            </div>
+
+            <!-- Student Detail in Center -->
+            <div class="relative z-10 my-auto py-2 space-y-1">
+                <span class="text-[8px] text-gold-light tracking-widest block font-bold">بطاقة هوية الطالب</span>
+                <h3 class="font-serif text-xl font-bold text-white drop-shadow" id="id-card-student-name">--</h3>
+                <span class="text-[9px] bg-emerald-950 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full font-bold" id="id-card-role-label">طالب حلقات</span>
+            </div>
+
+            <!-- Footer with framed QR and Registration Code -->
+            <div class="relative z-10 flex flex-col items-center space-y-2 border-t border-gold/20 pt-4">
+                <div class="bg-white p-2 rounded-xl border border-gold/40 shadow-inner flex items-center justify-center">
+                    <img id="id-card-qr-img" src="" class="w-24 h-24" alt="QR Code">
+                </div>
+                <div>
+                    <span class="text-[8px] text-emerald-400 block font-bold uppercase">الرمز التعريفي للتحضير</span>
+                    <span class="font-mono text-[10px] font-bold text-gold-light" id="id-card-student-code">--</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -296,7 +358,7 @@
                     </div>
                     <div>
                         <h3 class="font-serif text-lg text-gold-light font-bold">منظومة جامع الكوثر لتعليم القرآن الكريم</h3>
-                        <p class="text-[11px] text-emerald-400">تحت إشراف مدير الحلقات الشيخ محمد عبد الفتاح حجازي</p>
+                        <p class="text-[11px] text-emerald-400">تحت إشراف مدير الحلقات القرآنية والتربوية الشيخ محمد عبد الفتاح حجازي</p>
                     </div>
                 </div>
                 
@@ -404,7 +466,7 @@
                                         <th class="p-3 text-center">حضور اليوم</th>
                                         <th class="p-3 text-center">مجموع النقاط</th>
                                         <th class="p-3 text-center">رقم هاتف الأهل (الواتساب)</th>
-                                        <th class="p-3 text-center">الإجراءات والبطاقة</th>
+                                        <th class="p-3 text-center">البطاقة والتحكم</th>
                                     </tr>
                                 </thead>
                                 <tbody id="admin-dashboard-students-body" class="divide-y divide-emerald-950/20">
@@ -767,13 +829,13 @@
                         <div class="space-y-3 pt-2">
                             <div>
                                 <label class="text-xs text-emerald-400 block mb-1">اختر الكارت المراد مسحه:</label>
-                                <select id="qr-sim-student-id" class="w-full bg-[#03110d] border border-gold/20 rounded-lg p-2.5 text-xs text-white">
+                                <select id="qr-sim-student-id" class="w-full bg-[#03110d] border border-gold/20 rounded-lg p-2.5 text-xs text-white font-sans focus:outline-none">
                                     <!-- Dynamic list of students & teachers -->
                                 </select>
                             </div>
                             <div>
                                 <label class="text-xs text-emerald-400 block mb-1">تحديد ساعة المحاكاة الافتراضية:</label>
-                                <select id="qr-sim-time-slot" class="w-full bg-[#03110d] border border-gold/20 rounded-lg p-2.5 text-xs text-white">
+                                <select id="qr-sim-time-slot" class="w-full bg-[#03110d] border border-gold/20 rounded-lg p-2.5 text-xs text-white font-sans focus:outline-none">
                                     <option value="16:45">قبل الـ 5:00 مساءً (باكر / أو يوم عادي)</option>
                                     <option value="17:30">بين 5:00 م والـ 6:00 م (حضور عادي)</option>
                                     <option value="18:15">بعد الـ 6:00 مساءً (حضور متأخر)</option>
@@ -915,6 +977,13 @@
                     <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-2xl border border-gold/30 shadow-xl text-center space-y-4 max-w-sm mx-auto">
                         <h4 class="font-serif text-sm font-bold text-gold-light"><i class="fas fa-qrcode text-gold"></i> بطاقة الـ QR الرسمية للدخول الفوري</h4>
                         
+                        <!-- Mini Printable Button for Parent screen -->
+                        <div class="text-center">
+                            <button onclick="triggerStudentPersonalIDPrint()" class="bg-gold hover:bg-gold-dark text-mosque-950 font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 mx-auto">
+                                <i class="fas fa-id-card"></i> عرض البطاقة للطباعة والتعليق
+                            </button>
+                        </div>
+
                         <div class="bg-white p-3 rounded-xl shadow-lg inline-block border-2 border-gold mx-auto" id="qrcode-container-render">
                             <div id="student-personal-qr-element" class="w-32 h-32 flex items-center justify-center bg-gray-100">
                                 <i class="fas fa-sync-alt animate-spin text-gray-400"></i>
@@ -929,11 +998,11 @@
         </main>
     </div>
 
-    <!-- STUDENT EDIT MODAL (POPUP DIALOG) -->
-    <div id="student-edit-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 hidden opacity-0 transition-all duration-300">
+    <!-- STUDENT EDIT MODAL -->
+    <div id="student-edit-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden opacity-0 transition-all duration-300">
         <div class="bg-gradient-to-b from-mosque-900 to-mosque-950 p-6 rounded-3xl border border-gold/40 shadow-2xl max-w-lg w-full space-y-4">
-            <div class="flex justify-between items-center border-b border-gold/15 pb-2">
-                <h4 class="font-serif text-lg font-bold text-gold-light flex items-center gap-2">
+            <div class="flex justify-between items-center border-b border-gold/15 pb-2.5">
+                <h4 class="font-serif text-base font-bold text-gold-light flex items-center gap-1.5">
                     <i class="fas fa-user-edit text-gold"></i>
                     <span>تعديل كافة مذكرات وملحقات الطالب</span>
                 </h4>
@@ -1207,7 +1276,7 @@ app.listen(PORT, () => {
                 regular: 15,     
                 late: 5,         
                 absent: 0,
-                pointsPerPage: 5,
+                pointsPerPage: 10, // Default base scaling metric
                 jalabiya: 10,
                 asr: 10,
                 offdayAttend: 15,
@@ -1650,7 +1719,7 @@ app.listen(PORT, () => {
 
             availableTabs.forEach((tab, index) => {
                 const btn = document.createElement("button");
-                btn.className = `tab-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${index === 0 ? 'bg-gold text-mosque-950 shadow-md' : 'text-emerald-300 hover:bg-mosque-800'}`;
+                btn.className = `tab-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${index === 0 ? 'bg-gold text-mosque-950 shadow-md shadow-gold/20' : 'text-emerald-300 hover:bg-mosque-800'}`;
                 btn.innerHTML = `<i class="fas ${tab.icon}"></i> <span>${tab.name}</span>`;
                 btn.onclick = () => switchTab(tab.id, btn);
                 container.appendChild(btn);
@@ -1668,7 +1737,7 @@ app.listen(PORT, () => {
                 document.querySelectorAll(".tab-btn").forEach(btn => {
                     btn.className = "tab-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all text-emerald-300 hover:bg-mosque-800";
                 });
-                targetBtn.className = "tab-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all bg-gold text-mosque-950 shadow-md";
+                targetBtn.className = "tab-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all bg-gold text-mosque-950 shadow-md shadow-gold/20";
             }
 
             document.getElementById("tab-admin").classList.add("hidden");
@@ -1700,7 +1769,7 @@ app.listen(PORT, () => {
             subtabs.forEach(id => {
                 const btn = document.getElementById(`subtab-btn-${id}`);
                 if (id === subTabId) {
-                    btn.className = "flex-1 text-center py-2 px-3 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1 bg-gold text-mosque-950 shadow";
+                    btn.className = "flex-1 text-center py-2 px-3 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1 bg-gold text-mosque-950 shadow shadow-gold/10";
                 } else {
                     btn.className = "flex-1 text-center py-2 px-3 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1 bg-mosque-950 text-emerald-300 hover:bg-mosque-800 border border-gold/10";
                 }
@@ -1719,9 +1788,9 @@ app.listen(PORT, () => {
                 const btn = document.getElementById(`adminsub-btn-${id}`);
                 if (btn) {
                     if (id === subTabId) {
-                        btn.className = "flex-grow text-center py-2 px-3 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1.5 bg-gold text-mosque-950 shadow-md";
+                        btn.className = "flex-grow text-center py-2 px-3 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1.5 bg-gold text-mosque-950 shadow-md shadow-gold/20";
                     } else {
-                        btn.className = "flex-grow text-center py-2 px-3 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1.5 bg-mosque-950 text-emerald-300 hover:bg-mosque-800 border border-gold/10";
+                        btn.className = "flex-grow text-center py-2 px-3 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1.5 bg-[#03110d] text-emerald-300 hover:bg-mosque-800 border border-gold/10";
                     }
                 }
             });
@@ -2102,9 +2171,9 @@ app.listen(PORT, () => {
                             <button onclick="openStudentEditModal('${student.id}')" class="bg-blue-900 hover:bg-blue-800 text-white px-2.5 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1">
                                 <i class="fas fa-edit"></i> تعديل
                             </button>
-                            <a href="${qrUrl}" target="_blank" class="bg-mosque-800 hover:bg-mosque-700 text-gold border border-gold/35 px-2.5 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1">
-                                <i class="fas fa-qrcode"></i> الـ QR
-                            </a>
+                            <button onclick="triggerIDCardPrint('${student.id}')" class="bg-mosque-800 hover:bg-gold hover:text-mosque-950 text-gold border border-gold/35 px-2.5 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1.5 transition-all">
+                                <i class="fas fa-id-card"></i> كرت الهوية ID
+                            </button>
                             <button onclick="adminDeleteStudent('${student.id}')" class="bg-red-950 hover:bg-red-900 text-red-400 border border-red-500/20 px-2.5 py-1 rounded-lg text-[10px] font-bold">
                                 <i class="fas fa-trash-alt"></i> حذف
                             </button>
@@ -2735,12 +2804,15 @@ app.listen(PORT, () => {
                 logsForSt.forEach(lg => {
                     let attPts = state.settings[lg.attendance] || 0;
                     
-                    // نقاط الحضور والتحضير الإضافية لغير أيام الدوام الرسمي
+                    // نقاط الحضور والتحضير الإضافية لغير أيام الدوام الرسمي (أيام النشاط)
                     if (lg.isOffday && lg.attendance !== 'absent') {
                         attPts += (state.settings.offdayAttend || 15);
                     }
 
-                    let pagePoints = (lg.pages || 0) * (state.settings.pointsPerPage || 5);
+                    // معادلة تضاعف نقاط التسميع الجديدة: مربع عدد الصفحات مضروباً في 10
+                    const pages = lg.pages || 0;
+                    let pagePoints = (pages * pages) * 10; 
+                    
                     if (lg.isOffday && lg.pages > 0) {
                         pagePoints += (state.settings.offdayRecite || 10); // بونص التسميع في غير أيام الدوام
                     }
@@ -2755,6 +2827,47 @@ app.listen(PORT, () => {
                 const totalLogs = logsForSt.length;
                 const presents = logsForSt.filter(lg => lg.attendance !== 'absent').length;
                 student.attendanceRate = totalLogs > 0 ? Math.round((presents / totalLogs) * 100) : 100;
+            }
+        }
+
+        // ==================== Printable ID Card Handlers ====================
+        function toggleIDCardModal(show) {
+            const modal = document.getElementById("id-card-print-modal");
+            if (show) {
+                modal.classList.remove("hidden");
+                setTimeout(() => modal.classList.remove("opacity-0"), 10);
+            } else {
+                modal.classList.add("opacity-0");
+                setTimeout(() => modal.classList.add("hidden"), 300);
+            }
+        }
+
+        function triggerIDCardPrint(studentId) {
+            const student = state.students.find(s => s.id === studentId);
+            if (!student) return;
+
+            const teacher = state.users.find(u => u.id === student.teacherId) || { displayName: "الحلقات القرآنية" };
+            
+            document.getElementById("id-card-teacher-name").innerText = `الأستاذ المشرف: ${teacher.displayName}`;
+            document.getElementById("id-card-student-name").innerText = student.name;
+            document.getElementById("id-card-student-code").innerText = student.id;
+            
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${student.id}`;
+            document.getElementById("id-card-qr-img").src = qrUrl;
+
+            // تطبيق صورة شعار الجامع كخلفية شفافة مدمجة
+            const bgContainer = document.getElementById("id-card-mosque-bg");
+            const logoSrc = state.mosqueLogo || "5814283866859048641_5.jpg";
+            bgContainer.style.backgroundImage = `url('${logoSrc}')`;
+
+            toggleIDCardModal(true);
+        }
+
+        function triggerStudentPersonalIDPrint() {
+            if (!activeUser) return;
+            const student = state.students.find(s => s.userId === activeUser.id);
+            if (student) {
+                triggerIDCardPrint(student.id);
             }
         }
 
